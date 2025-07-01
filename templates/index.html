@@ -20,10 +20,9 @@
             <div class="d-flex justify-content-center">
                 {% for month in cal %}
                     {% if month[1] %}
-                        <!--<button type="button" class="btn btn-success me-1" onclick="{{url_for('update_period', month_id=month)}}">{{month[0]}}</button>-->
                         <a href="{{url_for('update_period', month_id=month[0])}}" class="btn btn-success me-1">{{month[0]}}</a>
                     {% else %}
-                        <button type="button" class="btn btn-warning" onclick='#'>{{month[0]}}</button>
+                        <a href="{{url_for('update_period', month_id=month[0])}}" class="btn btn-warning me-1">{{month[0]}}</a>
                     {% endif %}
                 {% endfor %}
 
