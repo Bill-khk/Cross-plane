@@ -6,6 +6,8 @@ app = Flask(__name__)
 month_names = [(month, True) for month in list(calendar.month_abbr)[1:]]
 print(month_names)
 
+destination = 1
+
 # TODO :
 # 1 - HTML - Add destination button
 # 2 - Managing Airport list names and suggestion
@@ -17,7 +19,7 @@ print(month_names)
 
 @app.route("/")
 def home():
-    return render_template('index.html', cal=month_names)
+    return render_template('index.html', cal=month_names, dest=destination)
 
 @app.route("/update_period/<month_id>")
 def update_period(month_id):
@@ -27,6 +29,15 @@ def update_period(month_id):
                    for m, v in month_names]
     return redirect("/")
 
+@app.route("/change_dest/<value>")
+def change_dest(value):
+    global destination
+    if value == 'True':
+        destination += 1
+    elif destination > 0:
+        destination -= 1
+    print(f'Based on :{value} - Nb dest changed:{destination}')
+    return redirect("/")
 
 if __name__ == '__main__':
     app.run()
