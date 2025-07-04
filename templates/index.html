@@ -29,14 +29,18 @@
         </div>
     </div>
 
-    <div class="container bg-primary">
-        <div class="bg-body-tertiary ps-5 w-75 mx-auto">
+    <div class="container bg-primary border">
+        <div class="bg-body-tertiary ps-5 w-75 mx-auto border">
             <h3>Destination</h3>
-            <div class="d-flex flex-row mt-2">
+            <div class="d-flex flex-row mt-2 border">
                 <a href="{{url_for('change_dest', value=True)}}" class="btn btn-success bg-primary">Add destination</a>
                 <a href="{{url_for('change_dest', value=False)}}" class="ms-1 btn btn-success bg-danger">Del destination</a>
             </div>
-<!--            <input type="text" id="name">-->
+            {% for d in range(dest) %}
+                <div class="d-flex flex-row p-2 border">
+                    <input type="text" id="name">
+                </div>
+            {% endfor %}
         </div>
     </div>
 

@@ -1,12 +1,21 @@
-from flask import Flask, render_template, redirect
 import calendar
+import os
+import requests
+
+from flask import Flask, render_template, redirect
 
 app = Flask(__name__)
 
 month_names = [(month, True) for month in list(calendar.month_abbr)[1:]]
-print(month_names)
-
 destination = 1
+
+Key = os.environ.get('API_KEY')
+URL = 'https://api.tequila.kiwi.com/v2'
+
+headers = {
+    'apikey': Key,
+}
+
 
 # TODO :
 # 1 - HTML - Add destination button
@@ -38,6 +47,20 @@ def change_dest(value):
         destination -= 1
     print(f'Based on :{value} - Nb dest changed:{destination}')
     return redirect("/")
+
+@app.route("/search/")
+def search_flight():
+    # TODO: convert to WEB compatible search
+    flight_info = {
+        'fly_from': 'LON',
+        'date_from': '01/09/2025',
+        'date_to': '01/10/2025',
+    }
+
+    response = requests.get(f'{URL}/search', params=flight_info, headers=headers)
+    print(response.status_code)
+    print(response.json())
+    return None
 
 if __name__ == '__main__':
     app.run()
