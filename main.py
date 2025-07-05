@@ -17,14 +17,12 @@ headers = {
 }
 
 
-# TODO :
-# 1 - HTML - Add destination button
-# 2 - Managing Airport list names and suggestion
-# 3 - Connecting to the API
-# 4 - Look for Plane for this destination
-# 5 - Display best options
-# 6 - Add another destination
-# 7 - Display best options based on both destination
+# TODO Create for for destination
+# Implement the form in HTML
+# Get the data in change destination and store it :
+dest = []
+# Retrieve dests and date for API request
+
 
 @app.route("/")
 def home():
@@ -48,19 +46,19 @@ def change_dest(value):
     print(f'Based on :{value} - Nb dest changed:{destination}')
     return redirect("/")
 
-@app.route("/search/")
-def search_flight():
-    # TODO: convert to WEB compatible search
+@app.route("/search/<dests>")
+def search_flight(dests):
+    print(dests)
     flight_info = {
         'fly_from': 'LON',
         'date_from': '01/09/2025',
         'date_to': '01/10/2025',
     }
 
-    response = requests.get(f'{URL}/search', params=flight_info, headers=headers)
-    print(response.status_code)
-    print(response.json())
-    return None
+    #response = requests.get(f'{URL}/search', params=flight_info, headers=headers)
+    #print(response.status_code)
+    #print(response.json())
+    return redirect("/")
 
 if __name__ == '__main__':
     app.run()
