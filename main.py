@@ -1,32 +1,48 @@
 import calendar
 import os
 import requests
-
 from flask import Flask, render_template, redirect
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+from flask_wtf import FlaskForm
+from flask_bootstrap import Bootstrap5
 
 app = Flask(__name__)
-
+bootstrap = Bootstrap5(app)
+app.config['SECRET_KEY'] = 'secret'
 month_names = [(month, True) for month in list(calendar.month_abbr)[1:]]
 destination = 1
 
+# API
 Key = os.environ.get('API_KEY')
 URL = 'https://api.tequila.kiwi.com/v2'
-
 headers = {
     'apikey': Key,
 }
+
+
+class DestForm(FlaskForm):
+    Destination = StringField('destination', validators=[DataRequired()])
+    Add = SubmitField()
 
 
 # TODO Create for for destination
 # Implement the form in HTML
 # Get the data in change destination and store it :
 dest = []
+
+
 # Retrieve dests and date for API request
 
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def home():
-    return render_template('index.html', cal=month_names, dest=destination)
+    myForm = DestForm()
+    if myForm.validate_on_submit():
+        print(myForm.Destination.data)
+        redirect("/")
+    return render_template('index.html', cal=month_names, dest=destination, form=myForm)
+
 
 @app.route("/update_period/<month_id>")
 def update_period(month_id):
@@ -35,6 +51,7 @@ def update_period(month_id):
     month_names = [(m, not v) if m == month_id else (m, v)
                    for m, v in month_names]
     return redirect("/")
+
 
 @app.route("/change_dest/<value>")
 def change_dest(value):
@@ -45,6 +62,7 @@ def change_dest(value):
         destination -= 1
     print(f'Based on :{value} - Nb dest changed:{destination}')
     return redirect("/")
+
 
 @app.route("/search/<dests>")
 def search_flight(dests):
@@ -59,6 +77,7 @@ def search_flight(dests):
     #print(response.status_code)
     #print(response.json())
     return redirect("/")
+
 
 if __name__ == '__main__':
     app.run()
