@@ -30,8 +30,6 @@ city_found = False
 reach_offset_limit = False
 Test_city = 'Paris'
 
-# TODO Fix that
-
 while not reach_offset_limit or not city_found:
     IATA_PARAMS = {
         'access_key': IATA_KEY,
@@ -61,7 +59,6 @@ class DestForm(FlaskForm):
 
 
 # TODO Create for for destination
-# Implement the form in HTML
 # Get the data in change destination and store it :
 # Retrieve dests and date for API request
 
