@@ -1,0 +1,34 @@
+:root {
+            --bs-primary: #0d6efd;      /* bright royal‑blue             */
+            --bs-secondary: #0a58ca;    /* deeper navy‑blue              */
+            --bs-success: #198754;      /* leave success/warning as‑is   */
+            --bs-warning: #ffc107;
+            --bs-body-bg: #eaf4ff;      /* ultra‑light sky‑blue body bg  */
+            --bs-body-color: #021933;   /* near‑black‑blue text          */
+            --bs-link-color: #0d6efd;
+            --bs-link-hover-color: #063b9f;
+        }
+
+.card-blue {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient header banner */
+.bg-blue-gradient {
+    background: linear-gradient(135deg, #1e7bff 0%, #0a58ca 100%);
+}
+
+/* Primary blue button variant */
+.btn-blue {
+    color: #fff;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+.btn-blue:hover,
+.btn-blue:focus {
+    background-color: #063b9f;
+    border-color: #063b9f;
+}

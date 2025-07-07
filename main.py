@@ -13,7 +13,8 @@ app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
 month_names = [(month, True) for month in list(calendar.month_abbr)[1:]]
-destination = 1
+dest_nb = 1
+destination = []
 
 # API
 Key = os.environ.get('API_KEY')
@@ -43,7 +44,7 @@ def home():
     if myForm.validate_on_submit():
         print(myForm.Destination.data)
         redirect("/")
-    return render_template('index.html', cal=month_names, dest=destination, form=myForm, current_year=datetime.now().year)
+    return render_template('index.html', cal=month_names, dest=dest_nb, form=myForm, current_year=datetime.now().year)
 
 
 @app.route("/update_period/<month_id>")
@@ -57,27 +58,28 @@ def update_period(month_id):
 
 @app.route("/change_dest/<value>")
 def change_dest(value):
-    global destination
+    global dest_nb
     if value == 'True':
-        destination += 1
-    elif destination > 0:
-        destination -= 1
-    print(f'Based on :{value} - Nb dest changed:{destination}')
+        dest_nb += 1
+    elif dest_nb > 0:
+        dest_nb -= 1
+    print(f'Based on :{value} - Nb dest changed:{dest_nb}')
     return redirect("/")
 
 
 @app.route("/search/<dests>")
 def search_flight(dests):
     print(dests)
+
     flight_info = {
         'fly_from': 'LON',
         'date_from': '01/09/2025',
         'date_to': '01/10/2025',
     }
 
-    #response = requests.get(f'{URL}/search', params=flight_info, headers=headers)
-    #print(response.status_code)
-    #print(response.json())
+    response = requests.get(f'{URL}/search', params=flight_info, headers=headers)
+    print(response.status_code)
+    print(response.json())
     return redirect("/")
 
 
