@@ -2,51 +2,136 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Find a matching destination</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Find a Matching Destination</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous"
+    >
+
+    <!-- Custom blue theme -->
+    <style>
+        /* Overwrite a few Bootstrap CSS variables */
+        :root {
+            --bs-primary: #0d6efd;      /* bright royal‑blue             */
+            --bs-secondary: #0a58ca;    /* deeper navy‑blue              */
+            --bs-success: #198754;      /* leave success/warning as‑is   */
+            --bs-warning: #ffc107;
+            --bs-body-bg: #eaf4ff;      /* ultra‑light sky‑blue body bg  */
+            --bs-body-color: #021933;   /* near‑black‑blue text          */
+            --bs-link-color: #0d6efd;
+            --bs-link-hover-color: #063b9f;
+        }
+
+        /* A reusable frosted‑card component */
+        .card-blue {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        /* Gradient header banner */
+        .bg-blue-gradient {
+            background: linear-gradient(135deg, #1e7bff 0%, #0a58ca 100%);
+        }
+
+        /* Primary blue button variant */
+        .btn-blue {
+            color: #fff;
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+        }
+        .btn-blue:hover,
+        .btn-blue:focus {
+            background-color: #063b9f;
+            border-color: #063b9f;
+        }
+    </style>
+
     {% from 'bootstrap5/form.html' import render_form %}
 </head>
-<body>
-    <header class="d-flex justify-content-center py-3 bg-secondary">
-        <ul class="nav nav-pills">
-            <li class="nav-item"><a href="{{url_for('home')}}" class="nav-link active" aria-current="page">Home</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">About</a></li>
-        </ul>
+
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- NAV -->
+    <header class="bg-blue-gradient shadow-sm">
+        <nav class="container d-flex justify-content-center py-3">
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a href="{{ url_for('home') }}" class="nav-link active">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link text-light">About</a>
+                </li>
+            </ul>
+        </nav>
     </header>
 
-    <div class="container bg-primary">
-        <div class="bg-body-tertiary p-5 rounded w-75 mx-auto">
-            <h1>Matching destination</h1>
-            <div class="d-flex justify-content-center bg-secondary">
-                {% for month in cal %}
-                    {% if month[1] %}
-                        <a href="{{url_for('update_period', month_id=month[0])}}" class="btn btn-success me-1">{{month[0]}}</a>
-                    {% else %}
-                        <a href="{{url_for('update_period', month_id=month[0])}}" class="btn btn-warning me-1">{{month[0]}}</a>
-                    {% endif %}
-                {% endfor %}
+    <!-- MAIN -->
+    <main class="flex-grow-1">
 
+        <!-- Month selector -->
+        <section class="container my-5">
+            <div class="card-blue p-5 mx-auto" style="max-width: 60rem;">
+                <h1 class="text-center text-primary mb-4">Find a Matching Destination</h1>
+
+                <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
+                    {% for month in cal %}
+                        {% if month[1] %}
+                            <a href="{{ url_for('update_period', month_id=month[0]) }}"
+                               class="btn btn-blue">{{ month[0] }}</a>
+                        {% else %}
+                            <a href="{{ url_for('update_period', month_id=month[0]) }}"
+                               class="btn btn-outline-primary">{{ month[0] }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="text-center">
+                    <a href="{{ url_for('search_flight', dests=True) }}"
+                       class="btn btn-blue btn-lg px-5">Search</a>
+                </div>
             </div>
-        </div>
-    </div>
-    <div class="container d-flex justify-content-center border">
-            <a href="{{url_for('search_flight', dests=True)}}" class="btn btn-success bg-success">Search</a>
-    </div>
-    <div class="container bg-primary border">
-        <div class="bg-body-tertiary ps-5 w-75 mx-auto border">
-            <h3>Destination</h3>
-            <div class="d-flex flex-row mt-2 border">
-                {{ form.csrf_token }}
-                {{ render_form(form) }}
-<!--                <input type="text" id="name">-->
-<!--                <a href="{{url_for('change_dest', value=True)}}" class="btn btn-success bg-primary ms-2">Add destination</a>-->
-<!--                <a href="{{url_for('change_dest', value=False)}}" class="ms-1 btn btn-success bg-danger">Del destination</a>-->
+        </section>
+
+        <!-- Destination form -->
+        <section class="container my-5">
+            <div class="card-blue p-5 mx-auto" style="max-width: 60rem;">
+                <h3 class="text-primary mb-4">Destination</h3>
+
+                <form method="post" class="needs-validation" novalidate>
+                    {{ form.csrf_token }}
+
+                    <!-- sleek input + button combo -->
+                    <div class="input-group shadow-sm mb-3">
+                        <!-- map‑pin icon (pure Unicode) -->
+                        <span class="input-group-text bg-primary text-white border-0">
+                            &#x1F4CD;
+                        </span>
+
+                        {{ form.Destination(
+                            class_="form-control border-0",
+                            placeholder="e.g. Paris | Tokyo | Sydney",
+                            autocomplete="off"
+                        ) }}
+
+                        {{ form.Add(class_="btn btn-blue px-4") }}
+                    </div>
+
+                </form>
             </div>
+        </section>
 
+    </main>
 
-        </div>
-    </div>
+    <!-- FOOTER -->
+    <footer class="py-3 bg-secondary text-white text-center mt-auto">
+        © {{ current_year }} Your Company
+    </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -6,6 +6,8 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
+from datetime import datetime
+
 
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
@@ -41,7 +43,7 @@ def home():
     if myForm.validate_on_submit():
         print(myForm.Destination.data)
         redirect("/")
-    return render_template('index.html', cal=month_names, dest=destination, form=myForm)
+    return render_template('index.html', cal=month_names, dest=destination, form=myForm, current_year=datetime.now().year)
 
 
 @app.route("/update_period/<month_id>")
