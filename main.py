@@ -8,6 +8,7 @@ from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
 from datetime import datetime
 
+
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
