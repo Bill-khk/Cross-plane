@@ -1,5 +1,7 @@
 import calendar
 import os
+
+import pandas as pd
 import requests
 from flask import Flask, render_template, redirect
 from wtforms import StringField, SubmitField
@@ -8,6 +10,9 @@ from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
 from datetime import datetime
 
+# TODO
+# Make the testing loop work for cities name - manage cap
+# Integrate the function in search_flight()
 
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
@@ -29,29 +34,49 @@ IATA_BASE_URL = 'https://api.aviationstack.com/v1/'
 offset = 0
 city_found = False
 reach_offset_limit = False
-Test_city = 'Paris'
+Test_city = 'paris'
 
-while not reach_offset_limit or not city_found:
-    IATA_PARAMS = {
-        'access_key': IATA_KEY,
-        'offset': offset
-    }
-    IATA_RESPONSE = requests.get(f'{IATA_BASE_URL}cities', params=IATA_PARAMS)
-    print(f'for offset:{offset} - Code:{IATA_RESPONSE.status_code}')
-    IATA_CITIES = IATA_RESPONSE.json()['data']
-    offset_limit = int(IATA_RESPONSE.json()['pagination']['total'] / 100)  # Used to know the max nb of loop request
 
-    for entry in IATA_CITIES:
-        if entry['city_name'] == Test_city:  # City found
-            print(entry['iata_code'])
-            city_found = True
-            # TODO Put in a CSV file to save the previous research
+# ------------------- TESTING LOOP---------------------------
+def get_IATA_online():
+    global reach_offset_limit, city_found, offset
+    while not reach_offset_limit or not city_found:
+        IATA_PARAMS = {
+            'access_key': IATA_KEY,
+            # 'offset': offset, #To remove if search option is available
+            'search': Test_city
+        }
+        IATA_RESPONSE = requests.get(f'{IATA_BASE_URL}cities', params=IATA_PARAMS)
+        print(f'for offset:{offset} - Code:{IATA_RESPONSE.status_code}')
+        IATA_CITIES = IATA_RESPONSE.json()['data']
+        offset_limit = int(IATA_RESPONSE.json()['pagination']['total'] / 100)  # Used to know the max nb of loop request
 
-    if not city_found:
-        # Try for the next 100 cities
-        offset += 100
-        if offset > offset_limit:
-            reach_offset_limit = True
+        for entry in IATA_CITIES:
+            if entry['city_name'] == Test_city:  # City found
+                print(entry['iata_code'])
+                city_found = True
+                # TODO Put in a CSV file to save the previous research
+
+        if not city_found:
+            # Try for the next 100 cities
+            offset += 100
+            if offset > offset_limit:
+                reach_offset_limit = True
+
+# -------------------------------------------------------------------
+
+def get_IATA(city):
+    IATA_MEMORY = pd.read_csv('IATA_memory.csv')
+    try:
+        IATA_CODE = IATA_MEMORY[IATA_MEMORY['City'] == city.capitalize()]['Code'][0]
+    except KeyError:
+        print('City not found.')
+        pass  # TODO Look online and put in the CSV
+        response = ''
+        if response.status_code == 200:
+            IATA_MEMORY.insert(len(IATA_MEMORY['City']), city.capitalize(), response.json()['data']['iata_code'])
+            IATA_MEMORY.to_csv('IATA_memory.csv')
+    return IATA_CODE
 
 
 class DestForm(FlaskForm):
@@ -59,16 +84,13 @@ class DestForm(FlaskForm):
     Add = SubmitField()
 
 
-# TODO Create for for destination
-# Get the data in change destination and store it :
-# Retrieve dests and date for API request
-
-
 @app.route("/", methods=['GET', 'POST'])
 def home():
     myForm = DestForm()
     if myForm.validate_on_submit():
         print(myForm.Destination.data)
+        # TODO Add destination in the HTML
+
         redirect("/")
     return render_template('index.html', cal=month_names, dest=dest_nb, form=myForm, current_year=datetime.now().year)
 
@@ -95,10 +117,12 @@ def change_dest(value):
 
 @app.route("/search/<dests>")
 def search_flight(dests):
+    print('search_flight')
     print(dests)
-
+    IATA_CODE = get_IATA(dests)
+    print(IATA_CODE)
     flight_info = {
-        'fly_from': 'LON',
+        'fly_from': IATA_CODE,
         'date_from': '01/09/2025',
         'date_to': '01/10/2025',
     }
