@@ -19,7 +19,7 @@ bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
 month_names = [(month, True) for month in list(calendar.month_abbr)[1:]]
 dest_nb = 1
-destinations = []
+destinations = ['Paris']
 
 # KIWI API
 KIWI_KEY = os.environ.get('API_KEY')
@@ -73,9 +73,14 @@ def get_IATA(city):
         print('City not found.')
         pass  # TODO Look online and put in the CSV
         response = ''
-        if response.status_code == 200:
-            IATA_MEMORY.insert(len(IATA_MEMORY['City']), city.capitalize(), response.json()['data']['iata_code'])
-            IATA_MEMORY.to_csv('IATA_memory.csv')
+        if response == '200':
+            pass
+        # if response.status_code == 200:
+        #     IATA_CODE = response.json()['data']['iata_code']
+        #     IATA_MEMORY.insert(len(IATA_MEMORY['City']), city.capitalize(), IATA_CODE)
+        #     IATA_MEMORY.to_csv('IATA_memory.csv')
+        else:
+            return False
     return IATA_CODE
 
 
@@ -87,12 +92,18 @@ class DestForm(FlaskForm):
 @app.route("/", methods=['GET', 'POST'])
 def home():
     myForm = DestForm()
+    city_error = True  # Put to False
     if myForm.validate_on_submit():
         print(myForm.Destination.data)
+        entry = myForm.Destination.data.capitalize()
+        if not get_IATA(entry):
+            city_error = True
+        else:
+            destinations.append(entry)
         # TODO Add destination in the HTML
 
         redirect("/")
-    return render_template('index.html', cal=month_names, dest=dest_nb, form=myForm, current_year=datetime.now().year)
+    return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm, current_year=datetime.now().year, city_error=city_error)
 
 
 @app.route("/update_period/<month_id>")
