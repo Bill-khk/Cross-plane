@@ -3,12 +3,12 @@ import os
 
 import pandas as pd
 import requests
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, url_for
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
-from datetime import datetime
+from datetime import datetime, date
 
 # TODO
 # Make the testing loop work for cities name - manage cap
@@ -18,8 +18,8 @@ app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
 month_names = [(month, True) for month in list(calendar.month_abbr)[1:]]
-dest_nb = 1
-destinations = ['Paris']
+dest_nb = 2
+destinations = ['Paris', 'Sydney']
 
 # KIWI API
 KIWI_KEY = os.environ.get('API_KEY')
@@ -70,8 +70,8 @@ def get_IATA(city):
     try:
         IATA_CODE = IATA_MEMORY[IATA_MEMORY['City'] == city.capitalize()]['Code'][0]
     except KeyError:
-        print('City not found.')
-        pass  # TODO Look online and put in the CSV
+        print('City not found in CSV.')
+        pass  # TODO Call online function
         response = ''
         if response == '200':
             pass
@@ -94,15 +94,13 @@ def home():
     myForm = DestForm()
     city_error = True  # Put to False
     if myForm.validate_on_submit():
-        print(myForm.Destination.data)
         entry = myForm.Destination.data.capitalize()
         if not get_IATA(entry):
             city_error = True
         else:
             destinations.append(entry)
-        # TODO Add destination in the HTML
-
-        redirect("/")
+            print(f'New list of destination {destinations}')
+            return redirect(url_for('change_dest', value=True))
     return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm, current_year=datetime.now().year, city_error=city_error)
 
 
@@ -125,13 +123,30 @@ def change_dest(value):
     print(f'Based on :{value} - Nb dest changed:{dest_nb}')
     return redirect("/")
 
+@app.route("/remove/<dest>")
+def remove_dest(dest):
+    global destinations
+    destinations.remove(dest)
+    print(f'New list of destination {destinations}')
+    return redirect(url_for('change_dest', value=False))
 
-@app.route("/search/<dests>")
-def search_flight(dests):
-    print('search_flight')
-    print(dests)
-    IATA_CODE = get_IATA(dests)
+
+@app.route("/search/")
+def search_flight():
+    IATA_CODE = get_IATA(destinations[0])
     print(IATA_CODE)
+    # Get period time
+    current_year = date.today().year
+    current_month = date.today().month
+    print(f'cm:{current_month}, cy:{current_year}')
+    date_from = ''
+    for x in range(current_month, len(month_names)):
+        if month_names[2][1]:
+            date_from = f'01/{x}/{current_year}'
+            break
+    # TODO FINISH
+    print(f'date_from:{date_from}')
+
     flight_info = {
         'fly_from': IATA_CODE,
         'date_from': '01/09/2025',
@@ -141,17 +156,7 @@ def search_flight(dests):
     # response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
     # print(response.status_code)
     # print(response.json())
-    # return redirect("/")
-
-
-@app.route("/IATA/<dests>")
-def IATA_conversion(dests):
-    IATA_KEY = os.environ.get('IATA_KEY')
-    IATA_BASE_URL = 'https://api.aviationstack.com/v1/'
-    IATA_HEAD = {
-        'access_key': IATA_KEY,
-    }
-    # Using https://aviationstack.com/
+    return redirect("/")
 
 
 if __name__ == '__main__':
