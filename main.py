@@ -63,6 +63,7 @@ def get_IATA_online():
             if offset > offset_limit:
                 reach_offset_limit = True
 
+
 # -------------------------------------------------------------------
 
 def get_IATA(city):
@@ -101,7 +102,8 @@ def home():
             destinations.append(entry)
             print(f'New list of destination {destinations}')
             return redirect(url_for('change_dest', value=True))
-    return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm, current_year=datetime.now().year, city_error=city_error)
+    return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm,
+                           current_year=datetime.now().year, city_error=city_error)
 
 
 @app.route("/update_period/<month_id>")
@@ -123,6 +125,7 @@ def change_dest(value):
     print(f'Based on :{value} - Nb dest changed:{dest_nb}')
     return redirect("/")
 
+
 @app.route("/remove/<dest>")
 def remove_dest(dest):
     global destinations
@@ -140,12 +143,25 @@ def search_flight():
     current_month = date.today().month
     print(f'cm:{current_month}, cy:{current_year}')
     date_from = ''
-    for x in range(current_month, len(month_names)):
-        if month_names[2][1]:
-            date_from = f'01/{x}/{current_year}'
-            break
-    # TODO FINISH
-    print(f'date_from:{date_from}')
+    date_to = ''
+    for x in range(current_month-1, len(month_names)):  # Starting from the current month
+        if date_from == '':
+            if month_names[x][1]:
+                date_from = f'01/{dformat(x+1)}/{current_year}'
+        else:
+            if not month_names[x][1]:
+                date_to = f'31/{dformat(x+1)}/{current_year}'
+
+    if date_to == '':
+        for x in range(current_month-1):
+            if not month_names[x][1]:
+                date_to = f'31/{dformat(x)}/{current_year+1}'
+                break
+        if date_to == '':
+            date_to = f'31/{dformat(current_month)}/{current_year + 1}'
+
+    # TODO Manage 31, 30 or 28
+    print(f'date_from:{date_from}, date_to:{date_to}')
 
     flight_info = {
         'fly_from': IATA_CODE,
@@ -158,6 +174,13 @@ def search_flight():
     # print(response.json())
     return redirect("/")
 
+
+def dformat(x):
+    if x < 10:
+        x2 = f'0{x}'
+    else:
+        x2 = x
+    return x2
 
 if __name__ == '__main__':
     app.run()
