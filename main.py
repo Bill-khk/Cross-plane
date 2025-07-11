@@ -1,6 +1,5 @@
 import calendar
 import os
-
 import pandas as pd
 import requests
 from flask import Flask, render_template, redirect, url_for
@@ -139,40 +138,43 @@ def search_flight():
     IATA_CODE = get_IATA(destinations[0])
     print(IATA_CODE)
     # Get period time
-    current_year = date.today().year
-    current_month = date.today().month
-    print(f'cm:{current_month}, cy:{current_year}')
-    date_from = ''
-    date_to = ''
-    for x in range(current_month-1, len(month_names)):  # Starting from the current month
-        if date_from == '':
-            if month_names[x][1]:
-                date_from = f'01/{dformat(x+1)}/{current_year}'
-        else:
-            if not month_names[x][1]:
-                date_to = f'31/{dformat(x+1)}/{current_year}'
+    dates = get_period()
 
-    if date_to == '':
-        for x in range(current_month-1):
-            if not month_names[x][1]:
-                date_to = f'31/{dformat(x)}/{current_year+1}'
-                break
-        if date_to == '':
-            date_to = f'31/{dformat(current_month)}/{current_year + 1}'
-
-    # TODO Manage 31, 30 or 28
-    print(f'date_from:{date_from}, date_to:{date_to}')
-
+    # KIWI API REQUESTS
     flight_info = {
         'fly_from': IATA_CODE,
-        'date_from': '01/09/2025',
-        'date_to': '01/10/2025',
+        'date_from': dates[0],
+        'date_to': dates[1],
     }
-
-    # response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
-    # print(response.status_code)
-    # print(response.json())
+    response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
+    print(response.status_code)
+    print(response.json())
     return redirect("/")
+
+
+def get_period():
+    current_year = date.today().year
+    current_month = date.today().month
+    date_from = ''
+    date_to = ''
+    for x in range(current_month - 1, len(month_names)):  # Starting from the current month
+        if date_from == '':
+            if month_names[x][1]:
+                date_from = f'01/{dformat(x + 1)}/{current_year}'
+        else:
+            if not month_names[x][1]:
+                date_to = f'{calendar.monthrange(current_year, x + 1)[1]}/{dformat(x + 1)}/{current_year}'
+
+    if date_to == '':
+        for x in range(current_month - 1):
+            if not month_names[x][1]:
+                date_to = f'{calendar.monthrange(current_year + 1, x)[1]}/{dformat(x)}/{current_year + 1}'
+                break
+        if date_to == '':
+            date_to = f'{calendar.monthrange(current_year + 1, current_month)[1]}/{dformat(current_month)}/{current_year + 1}'
+
+    print(f'date_from:{date_from}, date_to:{date_to}')
+    return date_from, date_to
 
 
 def dformat(x):
@@ -181,6 +183,7 @@ def dformat(x):
     else:
         x2 = x
     return x2
+
 
 if __name__ == '__main__':
     app.run()
