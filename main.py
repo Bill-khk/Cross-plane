@@ -11,7 +11,6 @@ from datetime import datetime, date
 
 # TODO
 # Make the testing loop work for cities name - manage cap
-# Integrate the function in search_flight()
 
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
