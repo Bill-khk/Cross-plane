@@ -1,4 +1,5 @@
 import calendar
+import json
 import os
 import pandas as pd
 import requests
@@ -15,9 +16,16 @@ from datetime import datetime, date
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
-month_names = [(month, True) for month in list(calendar.month_abbr)[1:]]
+month_names = [[month, True] for month in list(calendar.month_abbr)[1:]]
 dest_nb = 2
 destinations = ['Paris', 'Sydney']
+
+#TO DELETE ----------------Used to put only dec and jan as month
+for x in range(len(month_names)):
+    month_names[x][1] = False
+month_names[0][1] = True
+month_names[11][1] = True
+#TO DELETE ------------------
 
 # KIWI API
 KIWI_KEY = os.environ.get('API_KEY')
@@ -142,12 +150,18 @@ def search_flight():
     # KIWI API REQUESTS
     flight_info = {
         'fly_from': IATA_CODE,
+        'fly_to': 'BKK',
         'date_from': dates[0],
         'date_to': dates[1],
     }
     response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
     print(response.status_code)
-    print(response.json())
+
+    # Put the request response in a JSON file
+    # print(response.json())
+    # with open("json_response2.json", "w") as outfile:
+    #     json.dump(response.json(), outfile)
+
     return redirect("/")
 
 
@@ -183,6 +197,54 @@ def dformat(x):
         x2 = x
     return x2
 
+
+def filt_dests(data):
+    all_results = []
+    for result in data['data']:
+        routes = []
+        for flight in result['route']:
+            route = {
+                'flyFrom': flight['flyFrom'],
+                'cityFrom': flight['cityFrom'],
+                'flyTo': flight['flyTo'],
+                'cityTo': flight['cityTo'],
+                'local_departure': flight['local_departure'],
+                'utc_departure': flight['utc_departure'],
+                'local_arrival': flight['local_arrival'],
+                'airline': flight['airline'],
+            }
+            routes.append(route)
+
+        multiple_route = False
+        if len(routes) > 1:
+            multiple_route = True
+
+        one_dest = {
+            'from': result['cityFrom'],
+            'from_airport': result['flyFrom'],
+            'to': result['cityTo'],
+            'to_airport': result['flyTo'],
+            'price': result['price'],
+            'currency': list(result['conversion'].keys())[0],
+            'local_departure': result['local_departure'],
+            'utc_departure': result['utc_departure'],
+            'local_arrival': result['local_arrival'],
+            'duration': result['duration']['total'],  # time in second
+            'airline': result['airlines'],
+            'availability': result['availability']['seats'],
+            'route':routes,
+            'multiple_route': multiple_route
+            # 'link': result['deep_link'],
+        }
+        all_results.append(one_dest)
+    return all_results
+
+
+with open('API_response_multiple.json') as json_data:
+    data = json.load(json_data)
+
+retour_API = filt_dests(data)
+print(retour_API[0])
 
 if __name__ == '__main__':
     app.run()
