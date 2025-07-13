@@ -19,6 +19,7 @@ app.config['SECRET_KEY'] = 'secret'
 month_names = [[month, True] for month in list(calendar.month_abbr)[1:]]
 dest_nb = 2
 destinations = ['Paris', 'Sydney']
+API_destinations = []
 
 #TO DELETE ----------------Used to put only dec and jan as month
 for x in range(len(month_names)):
@@ -109,8 +110,8 @@ def home():
             print(f'New list of destination {destinations}')
             return redirect(url_for('change_dest', value=True))
     return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm,
-                           current_year=datetime.now().year, city_error=city_error)
-
+                           current_year=datetime.now().year, city_error=city_error, API_destinations=API_destinations)
+    # TODO render the API_destination in the HTML code
 
 @app.route("/update_period/<month_id>")
 def update_period(month_id):
@@ -142,25 +143,33 @@ def remove_dest(dest):
 
 @app.route("/search/")
 def search_flight():
+    # Where the results are going to be stored
+    global API_destinations
+    API_destinations = []
+
+    # Link the name put in HTML code by the user to IATA for the API request
     IATA_CODE = get_IATA(destinations[0])
-    print(IATA_CODE)
-    # Get period time
+
+    # Retrieve the period or research based on HTML interface
     dates = get_period()
 
     # KIWI API REQUESTS
     flight_info = {
         'fly_from': IATA_CODE,
-        'fly_to': 'BKK',
         'date_from': dates[0],
         'date_to': dates[1],
     }
-    response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
-    print(response.status_code)
+    # TO uncomment when online request
+    # response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
+    # print(response.status_code)
 
-    # Put the request response in a JSON file
-    # print(response.json())
-    # with open("json_response2.json", "w") as outfile:
-    #     json.dump(response.json(), outfile)
+    # Using offline request :
+    with open('API_response_multiple.json') as json_data:
+        data = json.load(json_data)
+
+    #Use a function to keep only wanted information
+    API_destinations = filt_dests(data)
+    print(API_destinations[0])
 
     return redirect("/")
 
@@ -239,12 +248,6 @@ def filt_dests(data):
         all_results.append(one_dest)
     return all_results
 
-
-with open('API_response_multiple.json') as json_data:
-    data = json.load(json_data)
-
-retour_API = filt_dests(data)
-print(retour_API[0])
 
 if __name__ == '__main__':
     app.run()
