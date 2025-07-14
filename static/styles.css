@@ -16,6 +16,13 @@
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 
+.card-gray {
+    background: rgba(235, 235, 235, 0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 0.2rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
 /* Gradient header banner */
 .bg-blue-gradient {
     background: linear-gradient(135deg, #1e7bff 0%, #0a58ca 100%);

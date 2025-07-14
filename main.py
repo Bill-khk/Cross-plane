@@ -109,8 +109,14 @@ def home():
             destinations.append(entry)
             print(f'New list of destination {destinations}')
             return redirect(url_for('change_dest', value=True))
+
+    # TO DELETE ------------------
+    with open('API_response_multiple.json') as json_data:
+        data = json.load(json_data)
+    API_destinations = filt_dests(data)
+    #------------------------------------------
     return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm,
-                           current_year=datetime.now().year, city_error=city_error, API_destinations=API_destinations)
+                           current_year=datetime.now().year, city_error=city_error, API_destinations=API_destinations[0:1])
     # TODO render the API_destination in the HTML code
 
 @app.route("/update_period/<month_id>")
@@ -121,7 +127,7 @@ def update_period(month_id):
                    for m, v in month_names]
     return redirect("/")
 
-
+# TODO Limit the number of destination to two for now
 @app.route("/change_dest/<value>")
 def change_dest(value):
     global dest_nb
