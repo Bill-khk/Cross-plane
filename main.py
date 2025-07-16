@@ -10,8 +10,7 @@ from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
 from datetime import datetime, date
 
-# TODO
-# Make the testing loop work for cities name - manage cap
+# TODO Make the testing loop work for cities name - manage cap
 
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
