@@ -39,3 +39,14 @@
     background-color: #063b9f;
     border-color: #063b9f;
 }
+
+.dep_time{
+    font-family:"Garamond";
+    font-weight: bold;
+}
+
+.dep_date{
+    font_family:"Verdana";
+    font-size: 14px;
+    color:#818181;
+}

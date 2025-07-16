@@ -105,11 +105,11 @@
                     <div class="card-gray p-5 mx-auto" style="max-width: 60rem;">
                         <div class="d-flex flex-row flex-wrap">
                             <div class="d-flex flex-column flex-wrap">
-                                <div>Dep Time</div>
-                                <div>Dep Date</div>
+                                <div class="dep_time">{{API_dest['utc_departure'][11:16]}}</div>
+                                <div class="dep_date">{{API_dest['utc_departure'][:10]}}</div>
                                 <div>Duration</div>
-                                <div>Arr Time</div>
-                                <div>Arr Date</div>
+                                <div class="dep_time">{{API_dest['local_arrival'][11:16]}}</div>
+                                <div class="dep_date">Arr Date</div>
                             </div>
                             <div class="d-flex flex-column flex-wrap align-items-center">
                                 <img src="/static/icones/top-itinerary.png" alt="" width="30">
