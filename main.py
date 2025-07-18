@@ -241,8 +241,11 @@ def filt_dests(data):
             'price': result['price'],
             'currency': list(result['conversion'].keys())[0],
             'local_departure': result['local_departure'],
-            'utc_departure': result['utc_departure'],
-            'local_arrival': result['local_arrival'],
+            # 'departure_day': get_day(result['local_departure']),
+            'dep_date': get_day(result['local_departure']),
+            'ari_date': get_day(result['local_arrival']),
+            # 'utc_departure': result['utc_departure'],
+            # 'local_arrival': result['local_arrival'],
             'duration': result['duration']['total'],  # time in second
             'airline': result['airlines'],
             'availability': result['availability']['seats'],
@@ -252,6 +255,18 @@ def filt_dests(data):
         }
         all_results.append(one_dest)
     return all_results
+
+
+# Date Object format [0-Year, 1-Month, 2-Month-name, 3-Day, 4-Day-name, 5-time]
+def get_day(date):
+    datetime_object = datetime.strptime(
+        f"{date[:4]}-{date[5:7]}-{date[8:10]}",
+        "%Y-%m-%d").date()
+    date_object = [date[:4], date[5:7], datetime_object.strftime("%a"), date[8:10], datetime_object.strftime("%a"),
+                   date[11:16]]
+    return date_object
+
+
 
 
 if __name__ == '__main__':
