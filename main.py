@@ -217,17 +217,30 @@ def filt_dests(data):
     for result in data['data']:
         routes = []
         for flight in result['route']:
+
+            depart_time_utc = get_day(flight['utc_departure'])[5]
+            DTU = datetime.strptime(f"{depart_time_utc}:00", '%X')
+            arrival_time_utc = get_day(flight['utc_arrival'])[5]
+            ATU = datetime.strptime(f"{arrival_time_utc}:00", '%X')
+            duration = DTU-ATU
+
+            # print(f"{flight['flyFrom']} - {flight['flyTo']}")
+            # print(duration)
+
             route = {
                 'flyFrom': flight['flyFrom'],
                 'cityFrom': flight['cityFrom'],
                 'flyTo': flight['flyTo'],
                 'cityTo': flight['cityTo'],
-                'local_departure': flight['local_departure'],
-                'utc_departure': flight['utc_departure'],
-                'local_arrival': flight['local_arrival'],
+                'duration': duration,
+                # 'local_departure': flight['local_departure'],
+                # 'utc_departure': flight['utc_departure'],
+                # 'local_arrival': flight['local_arrival'],
                 'airline': flight['airline'],
             }
             routes.append(route)
+
+
 
         multiple_route = False
         if len(routes) > 1:
