@@ -222,7 +222,7 @@ def filt_dests(data):
             DTU = datetime.strptime(f"{depart_time_utc}:00", '%X')
             arrival_time_utc = get_day(flight['utc_arrival'])[5]
             ATU = datetime.strptime(f"{arrival_time_utc}:00", '%X')
-            duration = DTU-ATU
+            r_duration = DTU-ATU
 
             # print(f"{flight['flyFrom']} - {flight['flyTo']}")
             # print(duration)
@@ -232,7 +232,7 @@ def filt_dests(data):
                 'cityFrom': flight['cityFrom'],
                 'flyTo': flight['flyTo'],
                 'cityTo': flight['cityTo'],
-                'duration': duration,
+                'r_duration': r_duration,
                 # 'local_departure': flight['local_departure'],
                 # 'utc_departure': flight['utc_departure'],
                 # 'local_arrival': flight['local_arrival'],
@@ -247,6 +247,15 @@ def filt_dests(data):
             multiple_route = True
 
         date_f = str(timedelta(seconds=result['duration']['total'])),
+        if len(date_f[0]) > 10:  # Case where it's more than one day
+            # Getting hour and minute from date_f that has a specific format if it is superior that one day
+            date_split = date_f[0].split(',')
+            time_string_h = date_split[1][1:len(date_split)-8]
+            time_string_m = date_split[1][len(date_split)-7:len(date_split)-5]
+            duration_trip = f'{date_f[0][:1]}day {time_string_h}h {time_string_m}m'  # What will be display
+
+        else:
+            duration_trip = f'{date_f[0][0:2]}h {date_f[0][3:5]}m'
 
         one_dest = {
             'from': result['cityFrom'],
@@ -261,7 +270,7 @@ def filt_dests(data):
             'ari_date': get_day(result['local_arrival']),
             # 'utc_departure': result['utc_departure'],
             # 'local_arrival': result['local_arrival'],
-            'duration': f'{date_f[0][0:2]}h {date_f[0][3:5]}m',
+            'duration': duration_trip,
             'airline': result['airlines'],
             'availability': result['availability']['seats'],
             'route': routes,
@@ -269,6 +278,7 @@ def filt_dests(data):
             # 'link': result['deep_link'],
         }
         print(date_f[0])
+        print(one_dest['duration'])
         all_results.append(one_dest)
     return all_results
 
