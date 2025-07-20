@@ -8,7 +8,7 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 # TODO Make the testing loop work for cities name - manage cap
 
@@ -246,6 +246,8 @@ def filt_dests(data):
         if len(routes) > 1:
             multiple_route = True
 
+        date_f = str(timedelta(seconds=result['duration']['total'])),
+
         one_dest = {
             'from': result['cityFrom'],
             'from_airport': result['flyFrom'],
@@ -259,13 +261,14 @@ def filt_dests(data):
             'ari_date': get_day(result['local_arrival']),
             # 'utc_departure': result['utc_departure'],
             # 'local_arrival': result['local_arrival'],
-            'duration': result['duration']['total'],  # time in second
+            'duration': f'{date_f[0][0:2]}h {date_f[0][3:5]}m',
             'airline': result['airlines'],
             'availability': result['availability']['seats'],
-            'route':routes,
+            'route': routes,
             'multiple_route': multiple_route
             # 'link': result['deep_link'],
         }
+        print(date_f[0])
         all_results.append(one_dest)
     return all_results
 
