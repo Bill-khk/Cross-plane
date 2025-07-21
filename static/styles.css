@@ -17,10 +17,15 @@
 }
 
 .card-gray {
-    background: rgba(235, 235, 235, 0.85);
+    background-color: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(8px);
-    border-radius: 0.2rem;
+    border-radius: 1rem;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+}
+
+.card-gray:hover {
+    transform: translateY(-3px);
 }
 
 /* Gradient header banner */
@@ -40,13 +45,30 @@
     border-color: #063b9f;
 }
 
-.dep_time{
-    font-family:"Garamond";
+.dep_time {
+    font-family: "Garamond", serif;
+    font-size: 1.25rem;
     font-weight: bold;
+    color: var(--bs-body-color);
 }
 
-.dep_date{
-    font_family:"Verdana";
-    font-size: 14px;
-    color:#818181;
+.dep_date {
+    font-family: "Verdana", sans-serif;
+    font-size: 0.9rem;
+    color: #818181;
+}
+
+.airport-code {
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.flight-duration {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.airline-badge {
+    font-size: 0.9rem;
+    border-radius: 1rem;
 }
