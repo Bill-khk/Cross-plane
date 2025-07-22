@@ -277,9 +277,9 @@ def filt_dests(data):
             'multiple_route': multiple_route
             # 'link': result['deep_link'],
         }
-        print(date_f[0])
-        print(one_dest['duration'])
         all_results.append(one_dest)
+        print(len(one_dest['route']))
+        print(one_dest['route'])
     return all_results
 
 

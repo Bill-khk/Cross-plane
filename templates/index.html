@@ -100,8 +100,9 @@
                 {% for API_dest in API_destinations %}
                     <div class="d-flex flex-row justify-content-between">
                         <h5 class="text-primary">{{API_dest['from']}}→{{API_dest['to']}}</h5>
-                        <h6 class="text-secondary">Duration</h6>
+                        <h6 class="text-secondary">{{API_dest['duration']}}</h6>
                     </div>
+                    {% if API_dest['route']|length == 1 %}
                     <div class="card-gray p-5 mx-auto" style="max-width: 60rem;">
                         <div class="d-flex flex-row flex-wrap">
                             <div class="d-flex flex-column flex-wrap text-end justify-content-between">
@@ -131,6 +132,13 @@
                             </div>
                         </div>
                     </div>
+                    {% else %}
+                        {% for route in API_dest['route'] %}
+
+
+                        {% endfor %}
+                    {% endif %}
+
                 {% endfor %}
             </div>
         </section>
