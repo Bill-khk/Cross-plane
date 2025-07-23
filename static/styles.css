@@ -72,3 +72,10 @@
     font-size: 0.9rem;
     border-radius: 1rem;
 }
+
+.sub-card {
+    transition: transform 0.2s ease;
+}
+.sub-card:hover {
+    transform: translateY(-3px);
+}

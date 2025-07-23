@@ -228,11 +228,13 @@ def filt_dests(data):
             # print(duration)
 
             route = {
-                'flyFrom': flight['flyFrom'],
-                'cityFrom': flight['cityFrom'],
-                'flyTo': flight['flyTo'],
-                'cityTo': flight['cityTo'],
+                'from_airport': flight['flyFrom'],
+                'from': flight['cityFrom'],
+                'to_airport': flight['flyTo'],
+                'to': flight['cityTo'],
                 'r_duration': r_duration,
+                'dep_date': get_day(flight['local_departure']),
+                'ari_date': get_day(flight['local_arrival']),
                 # 'local_departure': flight['local_departure'],
                 # 'utc_departure': flight['utc_departure'],
                 # 'local_arrival': flight['local_arrival'],
@@ -265,11 +267,8 @@ def filt_dests(data):
             'price': result['price'],
             'currency': list(result['conversion'].keys())[0],
             'local_departure': result['local_departure'],
-            # 'departure_day': get_day(result['local_departure']),
             'dep_date': get_day(result['local_departure']),
             'ari_date': get_day(result['local_arrival']),
-            # 'utc_departure': result['utc_departure'],
-            # 'local_arrival': result['local_arrival'],
             'duration': duration_trip,
             'airline': result['airlines'],
             'availability': result['availability']['seats'],
@@ -288,7 +287,7 @@ def get_day(date):
     datetime_object = datetime.strptime(
         f"{date[:4]}-{date[5:7]}-{date[8:10]}",
         "%Y-%m-%d").date()
-    date_object = [date[:4], date[5:7], datetime_object.strftime("%a"), date[8:10], datetime_object.strftime("%a"),
+    date_object = [date[:4], date[5:7], datetime_object.strftime("%b"), date[8:10], datetime_object.strftime("%a"),
                    date[11:16]]
     return date_object
 
