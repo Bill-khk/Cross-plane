@@ -218,14 +218,20 @@ def filt_dests(data):
         routes = []
         for flight in result['route']:
 
+            # Extracting the date in the correct format
             depart_time_utc = get_day(flight['utc_departure'])[5]
             DTU = datetime.strptime(f"{depart_time_utc}:00", '%X')
             arrival_time_utc = get_day(flight['utc_arrival'])[5]
             ATU = datetime.strptime(f"{arrival_time_utc}:00", '%X')
-            r_duration = DTU-ATU
-
+            r_duration_temp = str(ATU-DTU)
+            r_duration = f'{r_duration_temp[0:len(r_duration_temp)-6]}h {r_duration_temp[len(r_duration_temp)-5:len(r_duration_temp)-3]}m'
             # print(f"{flight['flyFrom']} - {flight['flyTo']}")
-            # print(duration)
+            # print(r_duration)
+
+            # Counting layover time
+
+
+
 
             route = {
                 'from_airport': flight['flyFrom'],
@@ -238,6 +244,7 @@ def filt_dests(data):
                 # 'local_departure': flight['local_departure'],
                 # 'utc_departure': flight['utc_departure'],
                 # 'local_arrival': flight['local_arrival'],
+                'layover':'ee',
                 'airline': flight['airline'],
             }
             routes.append(route)
