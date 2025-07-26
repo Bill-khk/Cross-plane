@@ -79,3 +79,6 @@
 .sub-card:hover {
     transform: translateY(-3px);
 }
+.layover{
+    font-size: 0.9rem;
+}

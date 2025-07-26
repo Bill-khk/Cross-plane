@@ -116,7 +116,6 @@ def home():
     #------------------------------------------
     return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm,
                            current_year=datetime.now().year, city_error=city_error, API_destinations=API_destinations[0:1])
-    # TODO render the API_destination in the HTML code
 
 @app.route("/update_period/<month_id>")
 def update_period(month_id):
@@ -216,6 +215,8 @@ def filt_dests(data):
     all_results = []
     for result in data['data']:
         routes = []
+        layover_time = ''
+        arrival_time_local = ''  # Used to store the arrival_time from last route of multiple flight
         for flight in result['route']:
 
             # Extracting the date in the correct format
@@ -229,9 +230,17 @@ def filt_dests(data):
             # print(r_duration)
 
             # Counting layover time
-
-
-
+            if arrival_time_local == '':  # First flight
+                arrival_time_local = get_day(flight['local_arrival'])[5]
+                arrival_time_local = datetime.strptime(f"{arrival_time_local}:00", '%X')
+            else:
+                depart_time_local = get_day(flight['local_departure'])[5]
+                depart_time_local = datetime.strptime(f"{depart_time_local}:00", '%X')
+                layover_time = str(depart_time_local - arrival_time_local)
+                layover_time = f'{layover_time[0:len(layover_time)-6]}h {layover_time[len(layover_time)-5:len(layover_time)-3]}m'
+                print(layover_time)
+                arrival_time_local = get_day(flight['local_arrival'])[5]
+                arrival_time_local = datetime.strptime(f"{arrival_time_local}:00", '%X')
 
             route = {
                 'from_airport': flight['flyFrom'],
@@ -241,10 +250,7 @@ def filt_dests(data):
                 'r_duration': r_duration,
                 'dep_date': get_day(flight['local_departure']),
                 'ari_date': get_day(flight['local_arrival']),
-                # 'local_departure': flight['local_departure'],
-                # 'utc_departure': flight['utc_departure'],
-                # 'local_arrival': flight['local_arrival'],
-                'layover':'ee',
+                'layover': layover_time,
                 'airline': flight['airline'],
             }
             routes.append(route)
@@ -284,7 +290,6 @@ def filt_dests(data):
             # 'link': result['deep_link'],
         }
         all_results.append(one_dest)
-        print(len(one_dest['route']))
         print(one_dest['route'])
     return all_results
 
