@@ -115,7 +115,7 @@ def home():
     API_destinations = filt_dests(data)
     #------------------------------------------
     return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm,
-                           current_year=datetime.now().year, city_error=city_error, API_destinations=API_destinations[0:1])
+                           current_year=datetime.now().year, city_error=city_error, API_destinations=API_destinations[0:3])
 
 @app.route("/update_period/<month_id>")
 def update_period(month_id):
@@ -238,7 +238,7 @@ def filt_dests(data):
                 depart_time_local = datetime.strptime(f"{depart_time_local}:00", '%X')
                 layover_time = str(depart_time_local - arrival_time_local)
                 layover_time = f'{layover_time[0:len(layover_time)-6]}h {layover_time[len(layover_time)-5:len(layover_time)-3]}m'
-                print(layover_time)
+                # print(layover_time)
                 arrival_time_local = get_day(flight['local_arrival'])[5]
                 arrival_time_local = datetime.strptime(f"{arrival_time_local}:00", '%X')
 
@@ -290,8 +290,9 @@ def filt_dests(data):
             # 'link': result['deep_link'],
         }
         all_results.append(one_dest)
-        print(one_dest['route'])
+        # print(one_dest['route'])
     return all_results
+
 
 
 # Date Object format [0-Year, 1-Month, 2-Month-name, 3-Day, 4-Day-name, 5-time]
