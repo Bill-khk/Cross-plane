@@ -290,7 +290,6 @@ def filt_dests(data):
             # 'link': result['deep_link'],
         }
         all_results.append(one_dest)
-        # print(one_dest['route'])
     return all_results
 
 
