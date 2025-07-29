@@ -304,7 +304,5 @@ def get_day(date):
     return date_object
 
 
-
-
 if __name__ == '__main__':
     app.run()
