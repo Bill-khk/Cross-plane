@@ -115,7 +115,9 @@ def home():
     API_destinations = filt_dests(data)
     #------------------------------------------
     return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm,
-                           current_year=datetime.now().year, city_error=city_error, API_destinations=API_destinations[0:3])
+                           current_year=datetime.now().year, city_error=city_error,
+                           API_destinations=API_destinations[0:3])
+
 
 @app.route("/update_period/<month_id>")
 def update_period(month_id):
@@ -124,6 +126,7 @@ def update_period(month_id):
     month_names = [(m, not v) if m == month_id else (m, v)
                    for m, v in month_names]
     return redirect("/")
+
 
 # TODO Limit the number of destination to two for now
 @app.route("/change_dest/<value>")
@@ -211,6 +214,7 @@ def dformat(x):
     return x2
 
 
+# Format the data retrieved from API into exploitable data
 def filt_dests(data):
     all_results = []
     for result in data['data']:
@@ -224,8 +228,8 @@ def filt_dests(data):
             DTU = datetime.strptime(f"{depart_time_utc}:00", '%X')
             arrival_time_utc = get_day(flight['utc_arrival'])[5]
             ATU = datetime.strptime(f"{arrival_time_utc}:00", '%X')
-            r_duration_temp = str(ATU-DTU)
-            r_duration = f'{r_duration_temp[0:len(r_duration_temp)-6]}h {r_duration_temp[len(r_duration_temp)-5:len(r_duration_temp)-3]}m'
+            r_duration_temp = str(ATU - DTU)
+            r_duration = f'{r_duration_temp[0:len(r_duration_temp) - 6]}h {r_duration_temp[len(r_duration_temp) - 5:len(r_duration_temp) - 3]}m'
             # print(f"{flight['flyFrom']} - {flight['flyTo']}")
             # print(r_duration)
 
@@ -237,7 +241,7 @@ def filt_dests(data):
                 depart_time_local = get_day(flight['local_departure'])[5]
                 depart_time_local = datetime.strptime(f"{depart_time_local}:00", '%X')
                 layover_time = str(depart_time_local - arrival_time_local)
-                layover_time = f'{layover_time[0:len(layover_time)-6]}h {layover_time[len(layover_time)-5:len(layover_time)-3]}m'
+                layover_time = f'{layover_time[0:len(layover_time) - 6]}h {layover_time[len(layover_time) - 5:len(layover_time) - 3]}m'
                 # print(layover_time)
                 arrival_time_local = get_day(flight['local_arrival'])[5]
                 arrival_time_local = datetime.strptime(f"{arrival_time_local}:00", '%X')
@@ -255,8 +259,6 @@ def filt_dests(data):
             }
             routes.append(route)
 
-
-
         multiple_route = False
         if len(routes) > 1:
             multiple_route = True
@@ -265,8 +267,8 @@ def filt_dests(data):
         if len(date_f[0]) > 10:  # Case where it's more than one day
             # Getting hour and minute from date_f that has a specific format if it is superior that one day
             date_split = date_f[0].split(',')
-            time_string_h = date_split[1][1:len(date_split)-8]
-            time_string_m = date_split[1][len(date_split)-7:len(date_split)-5]
+            time_string_h = date_split[1][1:len(date_split) - 8]
+            time_string_m = date_split[1][len(date_split) - 7:len(date_split) - 5]
             duration_trip = f'{date_f[0][:1]}day {time_string_h}h {time_string_m}m'  # What will be display
 
         else:
@@ -290,8 +292,10 @@ def filt_dests(data):
             # 'link': result['deep_link'],
         }
         all_results.append(one_dest)
-    return all_results
 
+    # TODO Sort destination less expensive and cheapest
+
+    return all_results
 
 
 # Date Object format [0-Year, 1-Month, 2-Month-name, 3-Day, 4-Day-name, 5-time]

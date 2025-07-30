@@ -100,7 +100,10 @@
                 <div class="card-blue p-4 mx-auto mb-3" style="max-width: 60rem;">
                     <details>
                         <summary class="d-flex flex-row justify-content-between">
-                            <h5 class="text-primary">{{API_dest['from']}}→{{API_dest['to']}}</h5>
+                            <div class="d-flex flex-row">
+                                <h5 class="text-primary">{{API_dest['from']}}→{{API_dest['to']}}</h5>
+                                <h5 class="text-secondary mx-3">{{API_dest['price']}} {{API_dest['currency']}}</h5>
+                            </div>
                             <h6 class="text-secondary">{{API_dest['duration']}}</h6>
                         </summary>
                         {% if API_dest['route']|length == 1 %}
