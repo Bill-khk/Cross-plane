@@ -112,11 +112,11 @@ def home():
     # TO DELETE ------------------
     with open('API_response_multiple.json') as json_data:
         data = json.load(json_data)
-    API_destinations = filt_dests(data)
+    API_destinations = sorting_result(filt_dests(data))
     #------------------------------------------
     return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm,
                            current_year=datetime.now().year, city_error=city_error,
-                           API_destinations=API_destinations[0:3])
+                           API_destinations=API_destinations[0:5])
 
 
 @app.route("/update_period/<month_id>")
@@ -180,7 +180,7 @@ def search_flight():
 
     return redirect("/")
 
-
+# Function to make it compatible and easy to fetch for WEB display
 def get_period():
     current_year = date.today().year
     current_month = date.today().month
@@ -240,7 +240,7 @@ def filt_dests(data):
             else:
                 depart_time_local = get_day(flight['local_departure'])[5]
                 depart_time_local = datetime.strptime(f"{depart_time_local}:00", '%X')
-                layover_time = str(depart_time_local - arrival_time_local)
+                layover_time = str(arrival_time_local - depart_time_local)
                 layover_time = f'{layover_time[0:len(layover_time) - 6]}h {layover_time[len(layover_time) - 5:len(layover_time) - 3]}m'
                 # print(layover_time)
                 arrival_time_local = get_day(flight['local_arrival'])[5]
@@ -275,6 +275,7 @@ def filt_dests(data):
             duration_trip = f'{date_f[0][0:2]}h {date_f[0][3:5]}m'
 
         one_dest = {
+            'id': result['id'],
             'from': result['cityFrom'],
             'from_airport': result['flyFrom'],
             'to': result['cityTo'],
@@ -285,6 +286,7 @@ def filt_dests(data):
             'dep_date': get_day(result['local_departure']),
             'ari_date': get_day(result['local_arrival']),
             'duration': duration_trip,
+            'duration_numeric': int(result['duration']['total']),
             'airline': result['airlines'],
             'availability': result['availability']['seats'],
             'route': routes,
@@ -293,10 +295,23 @@ def filt_dests(data):
         }
         all_results.append(one_dest)
 
+    # Removing all the unique values
+    all_results_unique = []
+    for item in all_results:
+        if item not in all_results_unique:
+            all_results_unique.append(item)
+    return all_results_unique
+
+
+def sorting_result(all_results_unique):
     # TODO Sort destination less expensive and cheapest
+    sorted_result = []
+    # Most relevant sorting - 2 shortest, 2 cheapest, then in between
+    sorted_result = sorted(all_results_unique, key=lambda x: (x['duration_numeric'], -x['price']))
+    print(sorted_result[:5])
 
-    return all_results
 
+    return sorted_result
 
 # Date Object format [0-Year, 1-Month, 2-Month-name, 3-Day, 4-Day-name, 5-time]
 def get_day(date):

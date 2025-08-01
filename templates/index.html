@@ -102,9 +102,13 @@
                         <summary class="d-flex flex-row justify-content-between">
                             <div class="d-flex flex-row">
                                 <h5 class="text-primary">{{API_dest['from']}}→{{API_dest['to']}}</h5>
-                                <h5 class="text-secondary mx-3">{{API_dest['price']}} {{API_dest['currency']}}</h5>
+                                <h6 class="text-secondary mx-3 mt-1">{{API_dest['price']}} {{API_dest['currency']}}</h6>
+                                <h6 class="text-secondary mt-1">Flights: {{API_dest['route']|length}}</h6>
                             </div>
-                            <h6 class="text-secondary">{{API_dest['duration']}}</h6>
+                            <div class="d-flex flex-row">
+                                <h5 class="text-primary">{{API_dest['ari_date'][3]}} {{API_dest['ari_date'][2]}}</h5>
+                                <h6 class="text-secondary mx-3">[{{API_dest['duration']}}]</h6>
+                            </div>
                         </summary>
                         {% if API_dest['route']|length == 1 %}
                         <div class="card-gray p-5 mx-auto" style="max-width: 60rem;">
