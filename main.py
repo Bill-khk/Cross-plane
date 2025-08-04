@@ -180,6 +180,7 @@ def search_flight():
 
     return redirect("/")
 
+
 # Function to make it compatible and easy to fetch for WEB display
 def get_period():
     current_year = date.today().year
@@ -309,21 +310,23 @@ def sorting_result(all_results_unique, option=0):
     # Most relevant sorting - 2 shortest, 2 cheapest, then in between
     if option == 0:
         #sorted_result = sorted(all_results_unique, key=lambda x: (x['duration_numeric'], -x['price']))
-        sorted_result.append(sorted(all_results_unique, key=lambda x: (x['duration_numeric'], -x['price']))[0:2])
-        sorted_result.append(sorted(all_results_unique, key=lambda x: (-x['price'], x['duration_numeric']))[0:2])
-        sorted_result
+        #sorted_result.append(sorted(all_results_unique, key=lambda x: (x['duration_numeric'], -x['price']))[0:2])
+        #sorted_result.append(sorted(all_results_unique, key=lambda x: (-x['price'], x['duration_numeric']))[0:2])
 
         # Weighted Scoring Model
         #1. Normalize the Data - Bring all features (duration, price, layovers) to the same scale (e.g., [0, 1]):
         #2. Assign Weights - Choose weights based on what most humans typically prefer: exPrice: 0.5 (very important) - Duration: 0.3 - Layovers: 0.2
         #3. Compute a Score for Each Flight
         #4 Sort flights by score
-
-
-        print(sorted_result[:5])
-
+        test = normalize_field(all_results_unique)
+        #print(sorted_result[:5])
 
     return sorted_result
+
+
+def normalize_field(list):
+    # TODO Not a correct format
+    extract_list = [(flight['id'], int(flight['price']), flight['duration_numeric']) for flight in list]
 
 # Date Object format [0-Year, 1-Month, 2-Month-name, 3-Day, 4-Day-name, 5-time]
 def get_day(date):
