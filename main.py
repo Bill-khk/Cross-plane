@@ -12,6 +12,9 @@ from datetime import datetime, date, timedelta
 
 # TODO Make the testing loop work for cities name - manage cap
 
+pd.set_option('display.max_columns', None)
+pd.set_option("display.precision", 10)
+
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
@@ -305,28 +308,41 @@ def filt_dests(data):
 
 
 def sorting_result(all_results_unique, option=0):
-    # TODO Sort destination less expensive and cheapest
     sorted_result = []
     # Most relevant sorting - 2 shortest, 2 cheapest, then in between
+    # Weighted Scoring Model - default weight
+    w_price = 1
+    w_duration = 1
     if option == 0:
-        #sorted_result = sorted(all_results_unique, key=lambda x: (x['duration_numeric'], -x['price']))
-        #sorted_result.append(sorted(all_results_unique, key=lambda x: (x['duration_numeric'], -x['price']))[0:2])
-        #sorted_result.append(sorted(all_results_unique, key=lambda x: (-x['price'], x['duration_numeric']))[0:2])
+        # Assign Weights - Choose weights based on what most important
+        pass
 
-        # Weighted Scoring Model
-        #1. Normalize the Data - Bring all features (duration, price, layovers) to the same scale (e.g., [0, 1]):
-        #2. Assign Weights - Choose weights based on what most humans typically prefer: exPrice: 0.5 (very important) - Duration: 0.3 - Layovers: 0.2
-        #3. Compute a Score for Each Flight
-        #4 Sort flights by score
-        test = normalize_field(all_results_unique)
-        #print(sorted_result[:5])
+    # Normalize the Data - Bring all features (duration, price, layovers) to the same scale (e.g., [0, 1]):
+    df_flight = pd.DataFrame(
+        [(flight['id'], int(flight['price']), flight['duration_numeric']) for flight in all_results_unique],
+        columns=['ID', 'price', 'duration'])
+    df_flight['price_norm'] = 1 - (df_flight['price'] / df_flight['price'].max())
+    df_flight['duration_norm'] = 1 - (df_flight['duration'] / df_flight['duration'].max())
+
+    # Compute a Score for Each Flight
+    df_flight['score'] = df_flight['price_norm'] * w_price + df_flight['duration_norm'] * w_duration
+    # Sort flights by score
+    df_flight = df_flight.sort_values('score', ascending=False)
+    df_flight.to_csv('result_test.csv', index=False)  # Used to check results with Excel
+
+    # Sort input with df
+    order_map = {id_val: idx for idx, id_val in enumerate(df_flight["ID"])}
+    sorted_result = sorted(all_results_unique, key=lambda x: order_map[x["id"]])
 
     return sorted_result
 
 
 def normalize_field(list):
     # TODO Not a correct format
-    extract_list = [(flight['id'], int(flight['price']), flight['duration_numeric']) for flight in list]
+    df_flight = pd.DataFrame([(flight['id'], int(flight['price']), flight['duration_numeric']) for flight in list],
+                             columns=['ID', 'price', 'duration'])
+    df_flight['price_norm'] = df_flight['price'] / df_flight['price'].max()
+
 
 # Date Object format [0-Year, 1-Month, 2-Month-name, 3-Day, 4-Day-name, 5-time]
 def get_day(date):
