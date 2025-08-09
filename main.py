@@ -10,8 +10,6 @@ from flask_wtf import FlaskForm
 from flask_bootstrap import Bootstrap5
 from datetime import datetime, date, timedelta
 
-# TODO Make the testing loop work for cities name - manage cap
-
 pd.set_option('display.max_columns', None)
 pd.set_option("display.precision", 10)
 
@@ -19,15 +17,18 @@ app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
 month_names = [[month, True] for month in list(calendar.month_abbr)[1:]]
-dest_nb = 2
-destinations = ['Paris', 'Sydney']
-API_destinations = []
+dest_nb = 2 #to put to 0
+destinations = ['Paris', 'Sydney']  # Used to store the cities to search and display on the HTML code
+API_destinations = []  # Used to store API response from KIWI
 
 #TO DELETE ----------------Used to put only dec and jan as month
 for x in range(len(month_names)):
     month_names[x][1] = False
 month_names[0][1] = True
 month_names[11][1] = True
+# Used to put default data in the website
+#Test_city = 'paris'
+
 #TO DELETE ------------------
 
 # KIWI API
@@ -43,56 +44,6 @@ IATA_BASE_URL = 'https://api.aviationstack.com/v1/'
 offset = 0
 city_found = False
 reach_offset_limit = False
-Test_city = 'paris'
-
-
-# ------------------- TESTING LOOP---------------------------
-def get_IATA_online():
-    global reach_offset_limit, city_found, offset
-    while not reach_offset_limit or not city_found:
-        IATA_PARAMS = {
-            'access_key': IATA_KEY,
-            # 'offset': offset, #To remove if search option is available
-            'search': Test_city
-        }
-        IATA_RESPONSE = requests.get(f'{IATA_BASE_URL}cities', params=IATA_PARAMS)
-        print(f'for offset:{offset} - Code:{IATA_RESPONSE.status_code}')
-        IATA_CITIES = IATA_RESPONSE.json()['data']
-        offset_limit = int(IATA_RESPONSE.json()['pagination']['total'] / 100)  # Used to know the max nb of loop request
-
-        for entry in IATA_CITIES:
-            if entry['city_name'] == Test_city:  # City found
-                print(entry['iata_code'])
-                city_found = True
-                # TODO Put in a CSV file to save the previous research
-
-        if not city_found:
-            # Try for the next 100 cities
-            offset += 100
-            if offset > offset_limit:
-                reach_offset_limit = True
-
-
-# -------------------------------------------------------------------
-
-def get_IATA(city):
-    IATA_MEMORY = pd.read_csv('IATA_memory.csv')
-    try:
-        IATA_CODE = IATA_MEMORY[IATA_MEMORY['City'] == city.capitalize()]['Code'][0]
-    except KeyError:
-        print('City not found in CSV.')
-        pass  # TODO Call online function
-        response = ''
-        if response == '200':
-            pass
-        # if response.status_code == 200:
-        #     IATA_CODE = response.json()['data']['iata_code']
-        #     IATA_MEMORY.insert(len(IATA_MEMORY['City']), city.capitalize(), IATA_CODE)
-        #     IATA_MEMORY.to_csv('IATA_memory.csv')
-        else:
-            return False
-    return IATA_CODE
-
 
 class DestForm(FlaskForm):
     Destination = StringField('destination', validators=[DataRequired()])
@@ -182,6 +133,55 @@ def search_flight():
     print(API_destinations[0])
 
     return redirect("/")
+
+
+# This function is looping through the list of IATA code returned by the API and return the unique IATA
+def get_IATA_online(Test_city):
+    global reach_offset_limit, city_found, offset
+    while not reach_offset_limit or not city_found:
+        IATA_PARAMS = {
+            'access_key': IATA_KEY,
+            'offset': offset,  # To remove if using premium option search
+            # 'search': Test_city
+        }
+        IATA_RESPONSE = requests.get(f'{IATA_BASE_URL}cities', params=IATA_PARAMS)
+        print(f'for offset:{offset} - Code:{IATA_RESPONSE.status_code}')
+        IATA_CITIES = IATA_RESPONSE.json()['data']
+        offset_limit = int(IATA_RESPONSE.json()['pagination']['total'] / 100)  # Used to know the max nb of loop request
+        for entry in IATA_CITIES:
+            if entry['city_name'] == Test_city:  # City found
+                print(entry['iata_code'])
+                city_found = True
+                return entry['iata_code']
+
+        if not city_found:
+            # Try for the next 100 cities
+            offset += 100
+            if offset > offset_limit:
+                reach_offset_limit = True
+
+    return ''
+
+# Check if the IATA code is in the historic file, otherwise check online through API
+def get_IATA(city):
+    IATA_CODE = ''
+    IATA_MEMORY = pd.read_csv('IATA_memory.csv')
+    try:
+        IATA_CODE = IATA_MEMORY[IATA_MEMORY
+            ['City'] == city.capitalize()]['Code'].item()
+    except ValueError:
+        print('IATA local 404.')
+        # TODO Before checking online, verify that the city name exist
+        # Looking online
+        IATA_CODE = get_IATA_online(city)
+        if IATA_CODE != '':
+            new_row = pd.DataFrame({'City': [city], 'Code': [IATA_CODE]})
+            IATA_MEMORY = pd.concat([IATA_MEMORY, new_row], ignore_index=True)
+            IATA_MEMORY.to_csv('IATA_memory.csv')
+        else:
+            print('IATA 404')
+            return False
+    return IATA_CODE
 
 
 # Function to make it compatible and easy to fetch for WEB display
@@ -337,20 +337,13 @@ def sorting_result(all_results_unique, option=0):
     return sorted_result
 
 
-def normalize_field(list):
-    # TODO Not a correct format
-    df_flight = pd.DataFrame([(flight['id'], int(flight['price']), flight['duration_numeric']) for flight in list],
-                             columns=['ID', 'price', 'duration'])
-    df_flight['price_norm'] = df_flight['price'] / df_flight['price'].max()
-
-
 # Date Object format [0-Year, 1-Month, 2-Month-name, 3-Day, 4-Day-name, 5-time]
-def get_day(date):
+def get_day(input_date):
     datetime_object = datetime.strptime(
-        f"{date[:4]}-{date[5:7]}-{date[8:10]}",
+        f"{input_date[:4]}-{input_date[5:7]}-{input_date[8:10]}",
         "%Y-%m-%d").date()
-    date_object = [date[:4], date[5:7], datetime_object.strftime("%b"), date[8:10], datetime_object.strftime("%a"),
-                   date[11:16]]
+    date_object = [input_date[:4], input_date[5:7], datetime_object.strftime("%b"), input_date[8:10], datetime_object.strftime("%a"),
+                   input_date[11:16]]
     return date_object
 
 
