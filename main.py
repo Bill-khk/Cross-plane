@@ -17,8 +17,8 @@ app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
 month_names = [[month, True] for month in list(calendar.month_abbr)[1:]]
-dest_nb = 2 #to put to 0
-destinations = ['Paris', 'Sydney']  # Used to store the cities to search and display on the HTML code
+orig_nb = 2 #to put to 0
+origin_loc = ['Paris', 'Sydney']  # Used to store the cities to search and display on the HTML code
 API_destinations = []  # Used to store API response from KIWI
 
 #TO DELETE ----------------Used to put only dec and jan as month
@@ -53,23 +53,23 @@ class DestForm(FlaskForm):
 @app.route("/", methods=['GET', 'POST'])
 def home():
     myForm = DestForm()
-    city_error = True  # Put to False
+    error = ''  # Put to False
     if myForm.validate_on_submit():
         entry = myForm.Destination.data.capitalize()
         if not get_IATA(entry):
-            city_error = True
+            error = 'city_error'
         else:
-            destinations.append(entry)
-            print(f'New list of destination {destinations}')
-            return redirect(url_for('change_dest', value=True))
+            origin_loc.append(entry)
+            print(f'New list of destination {origin_loc}')
+            return redirect(url_for('change_orig', value=True))
 
     # TO DELETE ------------------
     with open('API_response_multiple.json') as json_data:
         data = json.load(json_data)
     API_destinations = sorting_result(filt_dests(data))
     #------------------------------------------
-    return render_template('index.html', cal=month_names, dest=dest_nb, destinations=destinations, form=myForm,
-                           current_year=datetime.now().year, city_error=city_error,
+    return render_template('index.html', cal=month_names, dest=orig_nb, destinations=origin_loc, form=myForm,
+                           current_year=datetime.now().year, city_error=error,
                            API_destinations=API_destinations[0:5])
 
 
@@ -83,23 +83,23 @@ def update_period(month_id):
 
 
 # TODO Limit the number of destination to two for now
-@app.route("/change_dest/<value>")
-def change_dest(value):
-    global dest_nb
+@app.route("/change_orig/<value>")
+def change_orig(value):
+    global orig_nb
     if value == 'True':
-        dest_nb += 1
-    elif dest_nb > 0:
-        dest_nb -= 1
-    print(f'Based on :{value} - Nb dest changed:{dest_nb}')
+        orig_nb += 1
+    elif orig_nb > 0:
+        orig_nb -= 1
+    print(f'Based on :{value} - Nb dest changed:{orig_nb}')
     return redirect("/")
 
 
 @app.route("/remove/<dest>")
-def remove_dest(dest):
-    global destinations
-    destinations.remove(dest)
-    print(f'New list of destination {destinations}')
-    return redirect(url_for('change_dest', value=False))
+def remove_orig(dest):
+    global origin_loc
+    origin_loc.remove(dest)
+    print(f'New list of destination {origin_loc}')
+    return redirect(url_for('change_orig', value=False))
 
 
 @app.route("/search/")
@@ -109,7 +109,7 @@ def search_flight():
     API_destinations = []
 
     # Link the name put in HTML code by the user to IATA for the API request
-    IATA_CODE = get_IATA(destinations[0])
+    IATA_CODE = get_IATA(origin_loc[0])
 
     # Retrieve the period or research based on HTML interface
     dates = get_period()
@@ -183,6 +183,8 @@ def get_IATA(city):
             return False
     return IATA_CODE
 
+def check_city():
+    pass
 
 # Function to make it compatible and easy to fetch for WEB display
 def get_period():
