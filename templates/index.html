@@ -90,9 +90,12 @@
 
                         {{ form.Add(class_="btn btn-blue px-4") }}
                     </div>
-
                 </form>
+                {% if errors == 'city_error' %}
+                <p class="error">Can't find the city's name. Check the spelling.</p>
+                {% endif %}
             </div>
+
         </section>
 
         <section class="container my-5">

@@ -44,6 +44,7 @@ IATA_BASE_URL = 'https://api.aviationstack.com/v1/'
 offset = 0
 city_found = False
 reach_offset_limit = False
+errors = ''  # Used to retrieve error
 
 class DestForm(FlaskForm):
     Destination = StringField('destination', validators=[DataRequired()])
@@ -53,23 +54,23 @@ class DestForm(FlaskForm):
 @app.route("/", methods=['GET', 'POST'])
 def home():
     myForm = DestForm()
-    error = ''  # Put to False
+    global errors  # Put to False
     if myForm.validate_on_submit():
         entry = myForm.Destination.data.capitalize()
         if not get_IATA(entry):
-            error = 'city_error'
+            errors = 'city_error'
         else:
             origin_loc.append(entry)
             print(f'New list of destination {origin_loc}')
             return redirect(url_for('change_orig', value=True))
 
     # TO DELETE ------------------
-    with open('API_response_multiple.json') as json_data:
-        data = json.load(json_data)
-    API_destinations = sorting_result(filt_dests(data))
+    # with open('API_response_multiple.json') as json_data:
+    #     data = json.load(json_data)
+    # API_destinations = sorting_result(filt_dests(data))
     #------------------------------------------
     return render_template('index.html', cal=month_names, dest=orig_nb, destinations=origin_loc, form=myForm,
-                           current_year=datetime.now().year, city_error=error,
+                           current_year=datetime.now().year, errors=errors,
                            API_destinations=API_destinations[0:5])
 
 
@@ -146,7 +147,10 @@ def get_IATA_online(Test_city):
         }
         IATA_RESPONSE = requests.get(f'{IATA_BASE_URL}cities', params=IATA_PARAMS)
         print(f'for offset:{offset} - Code:{IATA_RESPONSE.status_code}')
-        IATA_CITIES = IATA_RESPONSE.json()['data']
+        try:
+            IATA_CITIES = IATA_RESPONSE.json()['data']
+        except KeyError:
+            return ''
         offset_limit = int(IATA_RESPONSE.json()['pagination']['total'] / 100)  # Used to know the max nb of loop request
         for entry in IATA_CITIES:
             if entry['city_name'] == Test_city:  # City found

@@ -82,3 +82,8 @@
 .layover{
     font-size: 0.9rem;
 }
+
+.error {
+  color: red;
+  font-style: italic;
+}
