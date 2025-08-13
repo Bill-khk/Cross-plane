@@ -92,7 +92,9 @@
                     </div>
                 </form>
                 {% if errors == 'city_error' %}
-                <p class="error">Can't find the city's name. Check the spelling.</p>
+                    <p class="error">Can't find the city's name. Check the spelling.</p>
+                {% elif errors == 'max_orig' %}
+                    <p class="error">Max number of cities = 2</p>
                 {% endif %}
             </div>
 

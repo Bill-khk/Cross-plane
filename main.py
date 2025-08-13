@@ -57,12 +57,18 @@ def home():
     global errors  # Put to False
     if myForm.validate_on_submit():
         entry = myForm.Destination.data.capitalize()
+        # TODO check if the city is already here
         if not get_IATA(entry):
             errors = 'city_error'
         else:
-            origin_loc.append(entry)
-            print(f'New list of destination {origin_loc}')
-            return redirect(url_for('change_orig', value=True))
+            # Limit the number of destination to two for now
+            if len(origin_loc) == 2:
+                errors = 'max_orig'
+                return redirect("/")
+            else:
+                origin_loc.append(entry)
+                print(f'New list of destination {origin_loc}')
+                return redirect(url_for('change_orig', value=True))
 
     # TO DELETE ------------------
     # with open('API_response_multiple.json') as json_data:
@@ -83,23 +89,24 @@ def update_period(month_id):
     return redirect("/")
 
 
-# TODO Limit the number of destination to two for now
 @app.route("/change_orig/<value>")
 def change_orig(value):
-    global orig_nb
+    global orig_nb, errors
     if value == 'True':
         orig_nb += 1
     elif orig_nb > 0:
         orig_nb -= 1
     print(f'Based on :{value} - Nb dest changed:{orig_nb}')
+    errors = ''
     return redirect("/")
 
 
 @app.route("/remove/<dest>")
 def remove_orig(dest):
-    global origin_loc
+    global origin_loc, errors
     origin_loc.remove(dest)
     print(f'New list of destination {origin_loc}')
+    errors = ''
     return redirect(url_for('change_orig', value=False))
 
 
@@ -187,8 +194,6 @@ def get_IATA(city):
             return False
     return IATA_CODE
 
-def check_city():
-    pass
 
 # Function to make it compatible and easy to fetch for WEB display
 def get_period():
