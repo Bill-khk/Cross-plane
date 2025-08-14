@@ -113,6 +113,7 @@ def remove_orig(dest):
 @app.route("/search/")
 def search_flight():
     # Where the results are going to be stored
+    print('----------------Searching flights----------------')
     global API_destinations
     API_destinations = []
 
@@ -129,16 +130,20 @@ def search_flight():
         'date_to': dates[1],
     }
     # TO uncomment when online request
-    # response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
-    # print(response.status_code)
+    print('----------------Online request----------------')
+    response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
+    # TODO put into data
+    print(response.status_code)
 
     # Using offline request :
-    with open('API_response_multiple.json') as json_data:
-        data = json.load(json_data)
+    # with open('API_response_multiple.json') as json_data:
+    #     data = json.load(json_data)
+
+
 
     #Use a function to keep only wanted information
     API_destinations = filt_dests(data)
-    print(API_destinations[0])
+    #print(API_destinations[0])
 
     return redirect("/")
 
@@ -217,7 +222,7 @@ def get_period():
         if date_to == '':
             date_to = f'{calendar.monthrange(current_year + 1, current_month)[1]}/{dformat(current_month)}/{current_year + 1}'
 
-    print(f'date_from:{date_from}, date_to:{date_to}')
+    # print(f'date_from:{date_from}, date_to:{date_to}')
     return date_from, date_to
 
 
