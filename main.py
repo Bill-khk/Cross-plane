@@ -17,8 +17,8 @@ app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
 month_names = [[month, True] for month in list(calendar.month_abbr)[1:]]
-orig_nb = 2 #to put to 0
-origin_loc = ['Paris', 'Sydney']  # Used to store the cities to search and display on the HTML code
+orig_nb = 1  #to put to 0
+origin_loc = ['Paris']  # Used to store the cities to search and display on the HTML code
 API_destinations = []  # Used to store API response from KIWI
 
 #TO DELETE ----------------Used to put only dec and jan as month
@@ -30,6 +30,16 @@ month_names[11][1] = True
 #Test_city = 'paris'
 
 #TO DELETE ------------------
+
+# Option list
+search_options = {
+    'TWO_WAYS': True,
+    'OPTION_1_WEEK': False,
+    'OPTION_2_WEEK': False,
+    'OPTION_3_WEEK': False,
+    'w_price': 1,
+    'w_duration': 1,
+}
 
 # KIWI API
 KIWI_KEY = os.environ.get('API_KEY')
@@ -46,6 +56,7 @@ city_found = False
 reach_offset_limit = False
 errors = ''  # Used to retrieve error
 
+
 class DestForm(FlaskForm):
     Destination = StringField('destination', validators=[DataRequired()])
     Add = SubmitField()
@@ -54,7 +65,7 @@ class DestForm(FlaskForm):
 @app.route("/", methods=['GET', 'POST'])
 def home():
     myForm = DestForm()
-    global errors  # Put to False
+    global errors, search_options  # Put to False
     if myForm.validate_on_submit():
         entry = myForm.Destination.data.capitalize()
         # TODO check if the city is already here
@@ -76,7 +87,7 @@ def home():
     # API_destinations = sorting_result(filt_dests(data))
     #------------------------------------------
     return render_template('index.html', cal=month_names, dest=orig_nb, destinations=origin_loc, form=myForm,
-                           current_year=datetime.now().year, errors=errors,
+                           current_year=datetime.now().year, errors=errors, search_options=search_options,
                            API_destinations=API_destinations[0:5])
 
 
@@ -134,12 +145,11 @@ def search_flight():
     response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
     # TODO put into data
     print(response.status_code)
+    data = response.json()
 
     # Using offline request :
     # with open('API_response_multiple.json') as json_data:
     #     data = json.load(json_data)
-
-
 
     #Use a function to keep only wanted information
     API_destinations = filt_dests(data)
@@ -178,13 +188,14 @@ def get_IATA_online(Test_city):
 
     return ''
 
+
 # Check if the IATA code is in the historic file, otherwise check online through API
 def get_IATA(city):
     IATA_CODE = ''
     IATA_MEMORY = pd.read_csv('IATA_memory.csv')
     try:
         IATA_CODE = IATA_MEMORY[IATA_MEMORY
-            ['City'] == city.capitalize()]['Code'].item()
+                                ['City'] == city.capitalize()]['Code'].item()
     except ValueError:
         print('IATA local 404.')
         # TODO Before checking online, verify that the city name exist
@@ -310,8 +321,8 @@ def filt_dests(data):
             'airline': result['airlines'],
             'availability': result['availability']['seats'],
             'route': routes,
-            'multiple_route': multiple_route
-            # 'link': result['deep_link'],
+            'multiple_route': multiple_route,
+            'link': result['deep_link'],
         }
         all_results.append(one_dest)
 
@@ -327,8 +338,7 @@ def sorting_result(all_results_unique, option=0):
     sorted_result = []
     # Most relevant sorting - 2 shortest, 2 cheapest, then in between
     # Weighted Scoring Model - default weight
-    w_price = 1
-    w_duration = 1
+    global search_option
     if option == 0:
         # Assign Weights - Choose weights based on what most important
         pass
@@ -341,7 +351,7 @@ def sorting_result(all_results_unique, option=0):
     df_flight['duration_norm'] = 1 - (df_flight['duration'] / df_flight['duration'].max())
 
     # Compute a Score for Each Flight
-    df_flight['score'] = df_flight['price_norm'] * w_price + df_flight['duration_norm'] * w_duration
+    df_flight['score'] = df_flight['price_norm'] * search_option['w_price'] + df_flight['duration_norm'] * search_option['w_duration']
     # Sort flights by score
     df_flight = df_flight.sort_values('score', ascending=False)
     df_flight.to_csv('result_test.csv', index=False)  # Used to check results with Excel
@@ -358,7 +368,8 @@ def get_day(input_date):
     datetime_object = datetime.strptime(
         f"{input_date[:4]}-{input_date[5:7]}-{input_date[8:10]}",
         "%Y-%m-%d").date()
-    date_object = [input_date[:4], input_date[5:7], datetime_object.strftime("%b"), input_date[8:10], datetime_object.strftime("%a"),
+    date_object = [input_date[:4], input_date[5:7], datetime_object.strftime("%b"), input_date[8:10],
+                   datetime_object.strftime("%a"),
                    input_date[11:16]]
     return date_object
 

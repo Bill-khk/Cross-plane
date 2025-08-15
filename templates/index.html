@@ -33,8 +33,8 @@
     <main class="flex-grow-1">
 
         <!-- Month selector -->
-        <section class="container my-5">
-            <div class="card-blue p-5 mx-auto" style="max-width: 60rem;">
+        <section class="container my-2">
+            <div class="card-blue p-4 mx-auto" style="max-width: 60rem;">
                 <h1 class="text-center text-primary mb-4">Find a Matching Destination</h1>
 
                 <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
@@ -55,10 +55,17 @@
                 </div>
             </div>
         </section>
+        <!--Flight search option-->
+        <section class="container">
+            <div class="card-blue p-2 mx-auto" style="max-width: 60rem;">
+                <!--Put the BOOLEAN search_option regarding their status-->
+
+            </div>
+        </section>
 
         <!-- Destination form -->
-        <section class="container my-5">
-            <div class="card-blue p-5 mx-auto" style="max-width: 60rem;">
+        <section class="container my-2">
+            <div class="card-blue p-4 px-5 mx-auto" style="max-width: 60rem;">
                 <h3 class="text-primary mb-4">Origin location</h3>
 
                 {% if dest > 0 %}
@@ -108,9 +115,11 @@
                             <div class="d-flex flex-row">
                                 <h5 class="text-primary">{{API_dest['from']}}→{{API_dest['to']}}</h5>
                                 <h6 class="text-secondary mx-3 mt-1">{{API_dest['price']}} {{API_dest['currency']}}</h6>
-                                <h6 class="text-secondary mt-1">Flights: {{API_dest['route']|length}}</h6>
+                                <h6 class="text-secondary mt-1">flight(s): {{API_dest['route']|length}}</h6>
                             </div>
                             <div class="d-flex flex-row">
+<!--                                <h6 class="text-primary">{{API_dest['link']}}</h6>-->
+                                <a class='text-primary mx-3' href="{{API_dest['link']}}">Check online</a>
                                 <h5 class="text-primary">{{API_dest['ari_date'][3]}} {{API_dest['ari_date'][2]}}</h5>
                                 <h6 class="text-secondary mx-3">[{{API_dest['duration']}}]</h6>
                             </div>
