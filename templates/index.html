@@ -59,7 +59,16 @@
         <section class="container">
             <div class="card-blue p-2 mx-auto" style="max-width: 60rem;">
                 <!--Put the BOOLEAN search_option regarding their status-->
+                {% for option in search_options %}
+                    {% if search_options[option] == True %}
+                        <a href="{{ url_for('update_option', options_name=option, value=search_options[option]) }}" class="btn btn-blue">{{option}}</a>
+                    {% elif search_options[option] == False %}
+                        <a href="{{ url_for('update_option', options_name=option, value=search_options[option]) }}" class="btn btn-outline-primary">{{option}}</a>
+                    {% else %}
 
+                    {% endif %}
+
+                {% endfor %}
             </div>
         </section>
 

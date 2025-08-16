@@ -374,5 +374,10 @@ def get_day(input_date):
     return date_object
 
 
+@app.route("/update_option/<options_name>&<value>")
+def update_option(options_name, value):
+    print(f'{options_name} - {value}')
+    return redirect("/")
+
 if __name__ == '__main__':
     app.run()
