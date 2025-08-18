@@ -37,8 +37,8 @@ search_options = {
     'OPTION_1_WEEK': False,
     'OPTION_2_WEEK': False,
     'OPTION_3_WEEK': False,
-    'w_price': 1,
-    'w_duration': 1,
+    'w_price': 10,
+    'w_duration': 10,
 }
 
 # KIWI API

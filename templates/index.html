@@ -57,7 +57,7 @@
         </section>
         <!--Flight search option-->
         <section class="container">
-            <div class="card-blue p-2 mx-auto" style="max-width: 60rem;">
+            <div class="d-flex flex-row justify-content-between align-items-center card-blue p-2 mx-auto" style="max-width: 60rem;">
                 <!--Put the BOOLEAN search_option regarding their status-->
                 {% for option in search_options %}
                     {% if search_options[option] == True %}
@@ -65,7 +65,10 @@
                     {% elif search_options[option] == False %}
                         <a href="{{ url_for('update_option', options_name=option, value=search_options[option]) }}" class="btn btn-outline-primary">{{option}}</a>
                     {% else %}
-
+                        <div class="slidecontainer">
+                            <p class="d-flex justify-content-center">{{option}}</p>
+                            <input type="range" min="1" max="10" value="{{search_options[option]}}" class="slider my-0" id="myRange">
+                        </div>
                     {% endif %}
 
                 {% endfor %}
