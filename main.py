@@ -376,7 +376,18 @@ def get_day(input_date):
 
 @app.route("/update_option/<options_name>&<value>")
 def update_option(options_name, value):
+    global search_options
     print(f'{options_name} - {value}')
+    if options_name == 'TWO_WAYS':  # Look for Two ways or not
+        search_options[options_name] = not search_options[options_name]
+    elif options_name in ('OPTION_1_WEEK', 'OPTION_2_WEEK', 'OPTION_3_WEEK'):
+        if not search_options[options_name]:  # Only one option should be activated
+            search_options['OPTION_1_WEEK'] = False
+            search_options['OPTION_2_WEEK'] = False
+            search_options['OPTION_3_WEEK'] = False
+            search_options[options_name] = True
+        else:
+            search_options[options_name] = False
     return redirect("/")
 
 if __name__ == '__main__':
