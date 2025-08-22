@@ -34,7 +34,7 @@ month_names[11][1] = True
 # Option list
 search_options = {
     'TWO_WAYS': True,
-    'OPTION_1_WEEK': False,
+    'OPTION_1_WEEK': True,
     'OPTION_2_WEEK': False,
     'OPTION_3_WEEK': False,
     'w_price': 10,
@@ -134,16 +134,22 @@ def search_flight():
     # Retrieve the period or research based on HTML interface
     dates = get_period()
 
+    # Used to define the period of holiday
+    nid = define_weeK()
+
     # KIWI API REQUESTS
     flight_info = {
         'fly_from': IATA_CODE,
         'date_from': dates[0],
         'date_to': dates[1],
+        'return_from': dates[0],
+        'return_to': dates[1],
+        'nights_in_dst_from': nid[0],
+        'nights_in_dst_to': nid[1],
     }
     # TO uncomment when online request
     print('----------------Online request----------------')
     response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
-    # TODO put into data
     print(response.status_code)
     data = response.json()
 
@@ -351,7 +357,8 @@ def sorting_result(all_results_unique, option=0):
     df_flight['duration_norm'] = 1 - (df_flight['duration'] / df_flight['duration'].max())
 
     # Compute a Score for Each Flight
-    df_flight['score'] = df_flight['price_norm'] * search_option['w_price'] + df_flight['duration_norm'] * search_option['w_duration']
+    df_flight['score'] = df_flight['price_norm'] * search_option['w_price'] + df_flight['duration_norm'] * \
+                         search_option['w_duration']
     # Sort flights by score
     df_flight = df_flight.sort_values('score', ascending=False)
     df_flight.to_csv('result_test.csv', index=False)  # Used to check results with Excel
@@ -377,7 +384,7 @@ def get_day(input_date):
 @app.route("/update_option/<options_name>&<value>")
 def update_option(options_name, value):
     global search_options
-    print(f'{options_name} - {value}')
+    # print(f'{options_name} - {value}')
     if options_name == 'TWO_WAYS':  # Look for Two ways or not
         search_options[options_name] = not search_options[options_name]
     elif options_name in ('OPTION_1_WEEK', 'OPTION_2_WEEK', 'OPTION_3_WEEK'):
@@ -389,6 +396,19 @@ def update_option(options_name, value):
         else:
             search_options[options_name] = False
     return redirect("/")
+
+
+# Used to settle the 'nights_in_dst_from' and 'nights_in_dst_to' in search_flight()
+# Should return the min/max night in the destination
+def define_weeK():
+    global search_options
+    day = 1
+    for option in search_options:
+        if search_options[option]==True and option != 'TWO_WAYS':
+            day = int(option[7:8])*7
+            print(f'{option} - {day}')
+    return day-1, day+2
+
 
 if __name__ == '__main__':
     app.run()
