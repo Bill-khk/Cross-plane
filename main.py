@@ -153,6 +153,11 @@ def search_flight():
     print(response.status_code)
     data = response.json()
 
+    # Saving request in file
+    print('----------------Saving offline----------------')
+    json_str = json.dumps(data, indent=4)
+    with open("API_response_multiple_2w.json", "w") as f:
+        f.write(json_str)
     # Using offline request :
     # with open('API_response_multiple.json') as json_data:
     #     data = json.load(json_data)
@@ -361,7 +366,7 @@ def sorting_result(all_results_unique, option=0):
                          search_option['w_duration']
     # Sort flights by score
     df_flight = df_flight.sort_values('score', ascending=False)
-    df_flight.to_csv('result_test.csv', index=False)  # Used to check results with Excel
+    # df_flight.to_csv('result_test.csv', index=False)  # Used to check results with Excel
 
     # Sort input with df
     order_map = {id_val: idx for idx, id_val in enumerate(df_flight["ID"])}
