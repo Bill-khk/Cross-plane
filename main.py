@@ -311,6 +311,7 @@ def filt_dests(data):
             date_split = date_f[0].split(',')
             time_string_h = date_split[1][1:len(date_split) - 8]
             time_string_m = date_split[1][len(date_split) - 7:len(date_split) - 5]
+            #TODO make a better display
             duration_trip = f'{date_f[0][:1]}day {time_string_h}h {time_string_m}m'  # What will be display
 
         else:
