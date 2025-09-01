@@ -311,11 +311,18 @@ def filt_dests(data):
             date_split = date_f[0].split(',')
             time_string_h = date_split[1][1:len(date_split) - 8]
             time_string_m = date_split[1][len(date_split) - 7:len(date_split) - 5]
-            #TODO make a better display
-            duration_trip = f'{date_f[0][:1]}day {time_string_h}h {time_string_m}m'  # What will be display
+            #TODO Optimize
+            duration_trip = f'{date_f[0][:1]}day {time_string_h}h'  # What will be display
+            if time_string_m == 0:
+                duration_trip += f' {time_string_m}m'
 
         else:
-            duration_trip = f'{date_f[0][0:2]}h {date_f[0][3:5]}m'
+            if len(date_f[0]) == 7:
+                duration_trip = f'{date_f[0][0:1]}h'
+            else:
+                duration_trip = f'{date_f[0][0:2]}h'
+            if date_f[0][3:5] == 0:
+                duration_trip += f'  {date_f[0][3:5]}m'
 
         one_dest = {
             'id': result['id'],
