@@ -280,6 +280,7 @@ def filt_dests(data):
                 arrival_time_local = get_day(flight['local_arrival'])[5]
                 arrival_time_local = datetime.strptime(f"{arrival_time_local}:00", '%X')
             else:
+                #TODO not working to fix
                 depart_time_local = get_day(flight['local_departure'])[5]
                 depart_time_local = datetime.strptime(f"{depart_time_local}:00", '%X')
                 layover_time = str(arrival_time_local - depart_time_local)
