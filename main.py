@@ -164,7 +164,7 @@ def search_flight():
 
     #Use a function to keep only wanted information
     API_destinations = filt_dests(data)
-    #print(API_destinations[0])
+    # print(API_destinations[0])
 
     return redirect("/")
 
@@ -306,24 +306,19 @@ def filt_dests(data):
         if len(routes) > 1:
             multiple_route = True
 
-        date_f = str(timedelta(seconds=result['duration']['total'])),
-        if len(date_f[0]) > 10:  # Case where it's more than one day
-            # Getting hour and minute from date_f that has a specific format if it is superior that one day
-            date_split = date_f[0].split(',')
-            time_string_h = date_split[1][1:len(date_split) - 8]
-            time_string_m = date_split[1][len(date_split) - 7:len(date_split) - 5]
-            #TODO Optimize
-            duration_trip = f'{date_f[0][:1]}day {time_string_h}h'  # What will be display
-            if time_string_m == 0:
-                duration_trip += f' {time_string_m}m'
+        # example of result : {'departure': 108300, 'return': 54900, 'total': 163200}
+        date_f = str(timedelta(seconds=result['duration']['total']))
+        # example of date_f : ('2 days, 2:05:00') or ('5:05:00')
 
-        else:
-            if len(date_f[0]) == 7:
-                duration_trip = f'{date_f[0][0:1]}h'
-            else:
-                duration_trip = f'{date_f[0][0:2]}h'
-            if date_f[0][3:5] == 0:
-                duration_trip += f'  {date_f[0][3:5]}m'
+        # if +24h, look for the time after the coma
+        st = len(date_f) if len(date_f) != -1 else 0
+        time_string_m = date_f[st-5:st-3]
+        time_string_h = date_f[date_f.find(', ')+1:st-6]
+        # print(f'{date_f}, hour(s)={time_string_h}, minutes = {time_string_m},')
+        duration_trip = date_f[:date_f.find(', ')] if date_f.find(', ') != -1 else ''  # start with days if the trip is superior to 24h
+        duration_trip += f'{time_string_h}h' if time_string_h != '0' else ''  # add minutes
+        duration_trip += f'{time_string_m}m' if time_string_m != '00' else ''
+        # print(f'{date_f} - will display:{duration_trip}')
 
         one_dest = {
             'id': result['id'],
