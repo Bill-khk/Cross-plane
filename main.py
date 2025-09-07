@@ -18,7 +18,7 @@ bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
 month_names = [[month, True] for month in list(calendar.month_abbr)[1:]]
 orig_nb = 1  #to put to 0
-origin_loc = ['Paris']  # Used to store the cities to search and display on the HTML code
+origin_loc = ['Paris', 'Sydney']  # Used to store the cities to search and display on the HTML code
 API_destinations = []  # Used to store API response from KIWI
 
 #TO DELETE ----------------Used to put only dec and jan as month
@@ -84,7 +84,6 @@ def home():
     # TO DELETE ------------------
     # with open('API_response_multiple.json') as json_data:
     #     data = json.load(json_data)
-    # API_destinations = sorting_result(filt_dests(data))
     #------------------------------------------
     return render_template('index.html', cal=month_names, dest=orig_nb, destinations=origin_loc, form=myForm,
                            current_year=datetime.now().year, errors=errors, search_options=search_options,
@@ -128,43 +127,47 @@ def search_flight():
     global API_destinations
     API_destinations = []
 
-    # Link the name put in HTML code by the user to IATA for the API request
-    IATA_CODE = get_IATA(origin_loc[0])
+    for dest in origin_loc:
+        # Link the name put in HTML code by the user to IATA for the API request
+        IATA_CODE = get_IATA(dest)
 
-    # Retrieve the period or research based on HTML interface
-    dates = get_period()
+        # Retrieve the period or research based on HTML interface
+        dates = get_period()
 
-    # Used to define the period of holiday
-    nid = define_weeK()
+        # Used to define the period of holiday
+        nid = define_weeK()
 
-    # KIWI API REQUESTS
-    flight_info = {
-        'fly_from': IATA_CODE,
-        'date_from': dates[0],
-        'date_to': dates[1],
-        'return_from': dates[0],
-        'return_to': dates[1],
-        'nights_in_dst_from': nid[0],
-        'nights_in_dst_to': nid[1],
-    }
-    # TO uncomment when online request
-    print('----------------Online request----------------')
-    response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
-    print(response.status_code)
-    data = response.json()
+        # KIWI API REQUESTS
+        flight_info = {
+            'fly_from': IATA_CODE,
+            'date_from': dates[0],
+            'date_to': dates[1],
+            'return_from': dates[0],
+            'return_to': dates[1],
+            'nights_in_dst_from': nid[0],
+            'nights_in_dst_to': nid[1],
+        }
+        # TO uncomment when online request
+        print('----------------Online request----------------')
 
-    # Saving request in file
-    print('----------------Saving offline----------------')
-    json_str = json.dumps(data, indent=4)
-    with open("API_response_multiple_2w.json", "w") as f:
-        f.write(json_str)
-    # Using offline request :
-    # with open('API_response_multiple.json') as json_data:
-    #     data = json.load(json_data)
+        response = requests.get(f'{KIWI_BASE_URL}/search', params=flight_info, headers=KIWI_HEAD)
+        print(response.status_code)
+        data = response.json()
 
-    #Use a function to keep only wanted information
-    API_destinations = filt_dests(data)
-    # print(API_destinations[0])
+        # Saving request in file
+        print('----------------Saving offline----------------')
+        json_str = json.dumps(data, indent=4)
+        with open(f"API_response_{dest}.json", "w") as f:
+            f.write(json_str)
+        # Using offline request :
+        # with open('API_response_multiple.json') as json_data:
+        #     data = json.load(json_data)
+
+        # Use a function to keep only wanted information
+        # TODO use sorting_result
+        data2 = sorting_result(filt_dests(data))
+        API_destinations.append(data2)
+        # print(API_destinations[0])
 
     return redirect("/")
 
@@ -280,12 +283,12 @@ def filt_dests(data):
                 arrival_time_local = get_day(flight['local_arrival'])[5]
                 arrival_time_local = datetime.strptime(f"{arrival_time_local}:00", '%X')
             else:
-                #TODO not working to fix
                 depart_time_local = get_day(flight['local_departure'])[5]
                 depart_time_local = datetime.strptime(f"{depart_time_local}:00", '%X')
-                layover_time = str(arrival_time_local - depart_time_local)
+                layover_time = str(depart_time_local - arrival_time_local)
+
                 layover_time = f'{layover_time[0:len(layover_time) - 6]}h {layover_time[len(layover_time) - 5:len(layover_time) - 3]}m'
-                # print(layover_time)
+                # Put the arrival to calculate the layover with the next flight
                 arrival_time_local = get_day(flight['local_arrival'])[5]
                 arrival_time_local = datetime.strptime(f"{arrival_time_local}:00", '%X')
 
@@ -360,17 +363,17 @@ def sorting_result(all_results_unique, option=0):
 
     # Normalize the Data - Bring all features (duration, price, layovers) to the same scale (e.g., [0, 1]):
     df_flight = pd.DataFrame(
-        [(flight['id'], int(flight['price']), flight['duration_numeric']) for flight in all_results_unique],
-        columns=['ID', 'price', 'duration'])
+        [(flight['id'], int(flight['price']), flight['duration_numeric'], flight['to']) for flight in all_results_unique],
+        columns=['ID', 'price', 'duration', 'to'])
     df_flight['price_norm'] = 1 - (df_flight['price'] / df_flight['price'].max())
     df_flight['duration_norm'] = 1 - (df_flight['duration'] / df_flight['duration'].max())
 
     # Compute a Score for Each Flight
-    df_flight['score'] = df_flight['price_norm'] * search_option['w_price'] + df_flight['duration_norm'] * \
-                         search_option['w_duration']
+    df_flight['score'] = df_flight['price_norm'] * search_options['w_price'] + df_flight['duration_norm'] * \
+                         search_options['w_duration']
     # Sort flights by score
     df_flight = df_flight.sort_values('score', ascending=False)
-    # df_flight.to_csv('result_test.csv', index=False)  # Used to check results with Excel
+    df_flight.to_csv(f'result_test_{all_results_unique[0]['from']}.csv', index=False)  # Used to check results with Excel
 
     # Sort input with df
     order_map = {id_val: idx for idx, id_val in enumerate(df_flight["ID"])}
@@ -390,6 +393,7 @@ def get_day(input_date):
     return date_object
 
 
+# Used to take into account the searching option from the web page
 @app.route("/update_option/<options_name>&<value>")
 def update_option(options_name, value):
     global search_options
