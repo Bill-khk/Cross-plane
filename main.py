@@ -163,9 +163,10 @@ def search_flight():
         # with open('API_response_multiple.json') as json_data:
         #     data = json.load(json_data)
 
+        data2 = sorting_result(filt_dests(data))  # results are formated (filt_dest) and sorted
+        # TODO sort again based on the second destination
+
         # Use a function to keep only wanted information
-        # TODO use sorting_result
-        data2 = sorting_result(filt_dests(data))
         API_destinations.append(data2)
         # print(API_destinations[0])
 
@@ -363,8 +364,9 @@ def sorting_result(all_results_unique, option=0):
 
     # Normalize the Data - Bring all features (duration, price, layovers) to the same scale (e.g., [0, 1]):
     df_flight = pd.DataFrame(
-        [(flight['id'], int(flight['price']), flight['duration_numeric'], flight['to']) for flight in all_results_unique],
-        columns=['ID', 'price', 'duration', 'to'])
+        [(flight['id'], int(flight['price']), flight['duration_numeric'], flight['to'], flight['dep_date'][6],
+          flight['route'][len(flight['route'])-1]['ari_date'][6]) for flight in all_results_unique],
+        columns=['ID', 'price', 'duration', 'to', 'departure', 'return'])
     df_flight['price_norm'] = 1 - (df_flight['price'] / df_flight['price'].max())
     df_flight['duration_norm'] = 1 - (df_flight['duration'] / df_flight['duration'].max())
 
@@ -382,14 +384,15 @@ def sorting_result(all_results_unique, option=0):
     return sorted_result
 
 
-# Date Object format [0-Year, 1-Month, 2-Month-name, 3-Day, 4-Day-name, 5-time]
+# Date Object format [0-Year, 1-Month, 2-Month-name, 3-Day, 4-Day-name, 5-time, 6-jj/mm/yyyy]
 def get_day(input_date):
     datetime_object = datetime.strptime(
         f"{input_date[:4]}-{input_date[5:7]}-{input_date[8:10]}",
         "%Y-%m-%d").date()
     date_object = [input_date[:4], input_date[5:7], datetime_object.strftime("%b"), input_date[8:10],
                    datetime_object.strftime("%a"),
-                   input_date[11:16]]
+                   input_date[11:16], f'{input_date[8:10]}/{input_date[5:7]}/{input_date[:4]}']
+
     return date_object
 
 
