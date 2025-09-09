@@ -55,7 +55,7 @@ offset = 0
 city_found = False
 reach_offset_limit = False
 errors = ''  # Used to retrieve error
-
+cross_result = None
 
 class DestForm(FlaskForm):
     Destination = StringField('destination', validators=[DataRequired()])
@@ -170,6 +170,7 @@ def search_flight():
         API_destinations.append(data2)
         # print(API_destinations[0])
 
+    cross_flight(API_destinations)
     return redirect("/")
 
 
@@ -424,6 +425,15 @@ def define_weeK():
             day = int(option[7:8])*7
             print(f'{option} - {day}')
     return day-1, day+2
+
+def cross_flight(data):
+   # Search between flights
+   global cross_result
+   # TODO search between flight
+
+   pass
+
+
 
 
 if __name__ == '__main__':
