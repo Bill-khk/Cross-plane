@@ -20,6 +20,7 @@ month_names = [[month, True] for month in list(calendar.month_abbr)[1:]]
 orig_nb = 1  #to put to 0
 origin_loc = ['Paris', 'Sydney']  # Used to store the cities to search and display on the HTML code
 API_destinations = []  # Used to store API response from KIWI
+cross_result = [] # Used for the result of two departure location
 
 #TO DELETE ----------------Used to put only dec and jan as month
 for x in range(len(month_names)):
@@ -55,7 +56,7 @@ offset = 0
 city_found = False
 reach_offset_limit = False
 errors = ''  # Used to retrieve error
-cross_result = None
+
 
 class DestForm(FlaskForm):
     Destination = StringField('destination', validators=[DataRequired()])
@@ -378,7 +379,7 @@ def sorting_result(all_results_unique, option=0):
     df_flight = df_flight.sort_values('score', ascending=False)
     df_flight.to_csv(f'result_test_{all_results_unique[0]['from']}.csv', index=False)  # Used to check results with Excel
 
-    # Sort input with df
+    # sorts all_results_unique so that its elements follow the same order as df_flight
     order_map = {id_val: idx for idx, id_val in enumerate(df_flight["ID"])}
     sorted_result = sorted(all_results_unique, key=lambda x: order_map[x["id"]])
 
@@ -426,15 +427,20 @@ def define_weeK():
             print(f'{option} - {day}')
     return day-1, day+2
 
-def cross_flight(data):
-   # Search between flights
-   global cross_result
-   # TODO search between flight
+def cross_flight():
+    # Search between flights
+    global cross_result
+    # ------------------------TO DELETE
+    result1 = pd.read_csv('result_test_Paris.csv')
+    result2 = pd.read_csv('result_test_Sydney.csv')
+    cross_result.append(result1)
+    cross_result.append(result2)
+    # ---------------------------------------
+    # TODO search between flight
+    print('------------Crossing flight--------------')
+    
 
-   pass
-
-
-
+cross_flight()
 
 if __name__ == '__main__':
     app.run()
