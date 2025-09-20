@@ -20,7 +20,7 @@ month_names = [[month, True] for month in list(calendar.month_abbr)[1:]]
 orig_nb = 1  #to put to 0
 origin_loc = ['Paris', 'Sydney']  # Used to store the cities to search and display on the HTML code
 API_destinations = []  # Used to store API response from KIWI
-cross_result = [] # Used for the result of two departure location
+cross_result = []  # Used for the result of two departure location
 
 #TO DELETE ----------------Used to put only dec and jan as month
 for x in range(len(month_names)):
@@ -318,10 +318,11 @@ def filt_dests(data):
 
         # if +24h, look for the time after the coma
         st = len(date_f) if len(date_f) != -1 else 0
-        time_string_m = date_f[st-5:st-3]
-        time_string_h = date_f[date_f.find(', ')+1:st-6]
+        time_string_m = date_f[st - 5:st - 3]
+        time_string_h = date_f[date_f.find(', ') + 1:st - 6]
         # print(f'{date_f}, hour(s)={time_string_h}, minutes = {time_string_m},')
-        duration_trip = date_f[:date_f.find(', ')] if date_f.find(', ') != -1 else ''  # start with days if the trip is superior to 24h
+        duration_trip = date_f[:date_f.find(', ')] if date_f.find(
+            ', ') != -1 else ''  # start with days if the trip is superior to 24h
         duration_trip += f'{time_string_h}h' if time_string_h != '0' else ''  # add minutes
         duration_trip += f'{time_string_m}m' if time_string_m != '00' else ''
         # print(f'{date_f} - will display:{duration_trip}')
@@ -367,7 +368,7 @@ def sorting_result(all_results_unique, option=0):
     # Normalize the Data - Bring all features (duration, price, layovers) to the same scale (e.g., [0, 1]):
     df_flight = pd.DataFrame(
         [(flight['id'], int(flight['price']), flight['duration_numeric'], flight['to'], flight['dep_date'][6],
-          flight['route'][len(flight['route'])-1]['ari_date'][6]) for flight in all_results_unique],
+          flight['route'][len(flight['route']) - 1]['ari_date'][6]) for flight in all_results_unique],
         columns=['ID', 'price', 'duration', 'to', 'departure', 'return'])
     df_flight['price_norm'] = 1 - (df_flight['price'] / df_flight['price'].max())
     df_flight['duration_norm'] = 1 - (df_flight['duration'] / df_flight['duration'].max())
@@ -377,7 +378,8 @@ def sorting_result(all_results_unique, option=0):
                          search_options['w_duration']
     # Sort flights by score
     df_flight = df_flight.sort_values('score', ascending=False)
-    df_flight.to_csv(f'result_test_{all_results_unique[0]['from']}.csv', index=False)  # Used to check results with Excel
+    df_flight.to_csv(f'result_test_{all_results_unique[0]['from']}.csv',
+                     index=False)  # Used to check results with Excel
 
     # sorts all_results_unique so that its elements follow the same order as df_flight
     order_map = {id_val: idx for idx, id_val in enumerate(df_flight["ID"])}
@@ -422,23 +424,36 @@ def define_weeK():
     global search_options
     day = 1
     for option in search_options:
-        if search_options[option]==True and option != 'TWO_WAYS':
-            day = int(option[7:8])*7
+        if search_options[option] == True and option != 'TWO_WAYS':
+            day = int(option[7:8]) * 7
             print(f'{option} - {day}')
-    return day-1, day+2
+    return day - 1, day + 2
+
 
 def cross_flight():
     # Search between flights
-    global cross_result
-    # ------------------------TO DELETE
+    global cross_result  # TODO put it in another function to supply data
+    # ------------------------ TO DELETE
     result1 = pd.read_csv('result_test_Paris.csv')
     result2 = pd.read_csv('result_test_Sydney.csv')
     cross_result.append(result1)
     cross_result.append(result2)
     # ---------------------------------------
     # TODO search between flight
+    # Assumption that the data are sorted
     print('------------Crossing flight--------------')
-    
+    # No working
+    merged = cross_result[0].merge(cross_result[1], on=['departure', 'to'], suffixes=('_1', '_2'))
+    merged['total_score'] = merged['score_1'] + merged['score_2']
+    merged.sort_values(['total_score'], ascending=False)
+    merged.drop_duplicates('to ', keep='first')
+    best_matches = merged.nlargest(10, 'total_score')[['ID_1', 'ID_2', 'departure', 'to', 'total_score']]
+    print(best_matches)
+
+# TODO Get info of a flight based on the ID
+def info_flight(id):
+    pass
+
 
 cross_flight()
 
