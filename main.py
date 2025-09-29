@@ -171,7 +171,9 @@ def search_flight():
         API_destinations.append(data2)
         # print(API_destinations[0])
 
-    cross_flight(API_destinations)
+    #TODO Use API_Dest
+    #cross_flight(API_destinations)
+    cross_flight()
     return redirect("/")
 
 
@@ -439,23 +441,20 @@ def cross_flight():
     cross_result.append(result1)
     cross_result.append(result2)
     # ---------------------------------------
-    # TODO search between flight
     # Assumption that the data are sorted
     print('------------Crossing flight--------------')
     # No working
     merged = cross_result[0].merge(cross_result[1], on=['departure', 'to'], suffixes=('_1', '_2'))
     merged['total_score'] = merged['score_1'] + merged['score_2']
     merged.sort_values(['total_score'], ascending=False)
-    merged.drop_duplicates('to ', keep='first')
+    merged.drop_duplicates('to', keep='first', inplace=True)
     best_matches = merged.nlargest(10, 'total_score')[['ID_1', 'ID_2', 'departure', 'to', 'total_score']]
-    print(best_matches)
+    print(merged)
 
 # TODO Get info of a flight based on the ID
 def info_flight(id):
     pass
 
-
-cross_flight()
 
 if __name__ == '__main__':
     app.run()
