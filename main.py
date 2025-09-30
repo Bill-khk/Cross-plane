@@ -20,7 +20,8 @@ month_names = [[month, True] for month in list(calendar.month_abbr)[1:]]
 orig_nb = 1  #to put to 0
 origin_loc = ['Paris', 'Sydney']  # Used to store the cities to search and display on the HTML code
 API_destinations = []  # Used to store API response from KIWI
-cross_result = []  # Used for the result of two departure location
+data_to_cross = []  # Used for the result of two departure location
+cross_result_id = []
 
 #TO DELETE ----------------Used to put only dec and jan as month
 for x in range(len(month_names)):
@@ -173,7 +174,6 @@ def search_flight():
 
     #TODO Use API_Dest
     #cross_flight(API_destinations)
-    cross_flight()
     return redirect("/")
 
 
@@ -382,7 +382,7 @@ def sorting_result(all_results_unique, option=0):
     df_flight = df_flight.sort_values('score', ascending=False)
     df_flight.to_csv(f'result_test_{all_results_unique[0]['from']}.csv',
                      index=False)  # Used to check results with Excel
-
+    data_to_cross.append(df_flight)  # Add the result of the sorted flight to be analyzed with the other destination
     # sorts all_results_unique so that its elements follow the same order as df_flight
     order_map = {id_val: idx for idx, id_val in enumerate(df_flight["ID"])}
     sorted_result = sorted(all_results_unique, key=lambda x: order_map[x["id"]])
@@ -434,22 +434,33 @@ def define_weeK():
 
 def cross_flight():
     # Search between flights
-    global cross_result  # TODO put it in another function to supply data
+    global data_to_cross, cross_result_id
     # ------------------------ TO DELETE
     result1 = pd.read_csv('result_test_Paris.csv')
     result2 = pd.read_csv('result_test_Sydney.csv')
-    cross_result.append(result1)
-    cross_result.append(result2)
+    data_to_cross.append(result1)
+    data_to_cross.append(result2)
     # ---------------------------------------
     # Assumption that the data are sorted
     print('------------Crossing flight--------------')
     # No working
-    merged = cross_result[0].merge(cross_result[1], on=['departure', 'to'], suffixes=('_1', '_2'))
+    merged = data_to_cross[0].merge(data_to_cross[1], on=['departure', 'to'], suffixes=('_1', '_2'))
     merged['total_score'] = merged['score_1'] + merged['score_2']
     merged.sort_values(['total_score'], ascending=False)
     merged.drop_duplicates('to', keep='first', inplace=True)
     best_matches = merged.nlargest(10, 'total_score')[['ID_1', 'ID_2', 'departure', 'to', 'total_score']]
-    print(merged)
+    # Adding the best_matches in the global cross results
+
+    for match in best_matches:
+        # Creating a list of matching flight with the destination
+        print(match)
+        cross_result_id.append((match['ID_1'], match['ID_2'], match['to']))
+
+    print(cross_result_id)
+
+
+cross_flight()
+
 
 # TODO Get info of a flight based on the ID
 def info_flight(id):
