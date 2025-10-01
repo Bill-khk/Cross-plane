@@ -84,8 +84,9 @@ def home():
                 return redirect(url_for('change_orig', value=True))
 
     # TO DELETE ------------------
-    # with open('API_response_multiple.json') as json_data:
-    #     data = json.load(json_data)
+    # TODO Display the matches of cross_flight() result
+    # TODO Comparison between API_destination and cross_data
+
     #------------------------------------------
     return render_template('index.html', cal=month_names, dest=orig_nb, destinations=origin_loc, form=myForm,
                            current_year=datetime.now().year, errors=errors, search_options=search_options,
@@ -168,12 +169,12 @@ def search_flight():
         data2 = sorting_result(filt_dests(data))  # results are formated (filt_dest) and sorted
         # TODO sort again based on the second destination
 
-        # Use a function to keep only wanted information
-        API_destinations.append(data2)
+        API_destinations.append(data2) #To delete later when cross_flight works ?
         # print(API_destinations[0])
 
-    #TODO Use API_Dest
-    #cross_flight(API_destinations)
+    # Now that the data_to_cross is filled through sorting_result(), we can process the data
+    cross_flight()
+
     return redirect("/")
 
 
@@ -436,30 +437,27 @@ def cross_flight():
     # Search between flights
     global data_to_cross, cross_result_id
     # ------------------------ TO DELETE
-    result1 = pd.read_csv('result_test_Paris.csv')
-    result2 = pd.read_csv('result_test_Sydney.csv')
-    data_to_cross.append(result1)
-    data_to_cross.append(result2)
+    # result1 = pd.read_csv('result_test_Paris.csv')
+    # result2 = pd.read_csv('result_test_Sydney.csv')
+    # data_to_cross.append(result1)
+    # data_to_cross.append(result2)
     # ---------------------------------------
     # Assumption that the data are sorted
     print('------------Crossing flight--------------')
-    # No working
     merged = data_to_cross[0].merge(data_to_cross[1], on=['departure', 'to'], suffixes=('_1', '_2'))
     merged['total_score'] = merged['score_1'] + merged['score_2']
     merged.sort_values(['total_score'], ascending=False)
     merged.drop_duplicates('to', keep='first', inplace=True)
     best_matches = merged.nlargest(10, 'total_score')[['ID_1', 'ID_2', 'departure', 'to', 'total_score']]
+
     # Adding the best_matches in the global cross results
-
-    for match in best_matches:
-        # Creating a list of matching flight with the destination
-        print(match)
-        cross_result_id.append((match['ID_1'], match['ID_2'], match['to']))
-
-    print(cross_result_id)
-
-
-cross_flight()
+    print(f'lenght of cross_result_id:{len(best_matches)}')
+    if len(best_matches):  # If there is only one dest result, for loop go through the values, not the matches
+        cross_result_id.append(best_matches)
+    else:
+        for match in best_matches:
+            # Creating a list of matching flight with the destination
+            cross_result_id.append(match)
 
 
 # TODO Get info of a flight based on the ID
