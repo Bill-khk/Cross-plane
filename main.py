@@ -13,6 +13,7 @@ from datetime import datetime, date, timedelta
 pd.set_option('display.max_columns', None)
 pd.set_option("display.precision", 10)
 
+test_mode = True  # TODO create a test_mode
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.config['SECRET_KEY'] = 'secret'
